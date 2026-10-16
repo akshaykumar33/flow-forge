@@ -37,12 +37,12 @@ This file is the single source of truth for what exists. If a feature is not mar
 
 ## Feature status
 
-| Feature                         | Status      | Tested | Documented | Notes                         |
-| ------------------------------- | ----------- | ------ | ---------- | ----------------------------- |
-| Workspace tooling               | Implemented | n/a    | Yes        |                               |
-| Graph model (`@flowforge/core`) | Planned     |        |            | Phase 1                       |
-| Flowchart parser adapter        | Planned     |        |            | Phase 1, approach in ADR-0004 |
-| Everything else                 | Planned     |        |            | See phase plan                |
+| Feature                         | Status      | Tested              | Documented     | Notes                                                                        |
+| ------------------------------- | ----------- | ------------------- | -------------- | ---------------------------------------------------------------------------- |
+| Workspace tooling               | Implemented | n/a                 | Yes            |                                                                              |
+| Graph model (`@flowforge/core`) | Implemented | Yes (14 unit tests) | Partly (TSDoc) | Flowchart only; layout, animation and simulation fields come in later phases |
+| Flowchart parser adapter        | Planned     |                     |                | Phase 1, approach in ADR-0004                                                |
+| Everything else                 | Planned     |                     |                | See phase plan                                                               |
 
 ## Risk register
 
