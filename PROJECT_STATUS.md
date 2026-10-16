@@ -1,6 +1,6 @@
 # Project status
 
-Last updated: 2026-10-16. Current phase: **0 — Discovery and planning**.
+Last updated: 2026-10-16. Current phase: **1 — Foundation, complete locally**. Phase 0 is done. The CI workflow exists but has never run, because there is no remote yet.
 
 This file is the single source of truth for what exists. If a feature is not marked
 **Implemented** here, it does not work yet.
@@ -12,7 +12,7 @@ This file is the single source of truth for what exists. If a feature is not mar
 - Environment: Node 24.14, pnpm 10.33, git 2.52, Windows 11.
 - Tooling in place: pnpm workspaces, strict TypeScript 6.0 base config, ESLint 10 with
   typescript-eslint, Prettier, Vitest. See [ADR-0002](docs/architecture/ADR/0002-typescript-6-pin.md).
-- No git remote, no CI run yet, nothing published.
+- No git remote, no CI run yet, nothing published. CI (`.github/workflows/ci.yml`) runs format, lint, cycle check, build, typecheck and tests on Ubuntu and Windows once pushed.
 
 ## Assumptions
 
@@ -37,12 +37,13 @@ This file is the single source of truth for what exists. If a feature is not mar
 
 ## Feature status
 
-| Feature                                | Status      | Tested                     | Documented     | Notes                                                                                                                                                                                                                               |
-| -------------------------------------- | ----------- | -------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Workspace tooling                      | Implemented | n/a                        | Yes            |                                                                                                                                                                                                                                     |
-| Graph model (`@flowforge/core`)        | Implemented | Yes (14 unit tests)        | Partly (TSDoc) | Flowchart only; layout, animation and simulation fields come in later phases                                                                                                                                                        |
-| Flowchart parser (`@flowforge/parser`) | Implemented | Yes (16 tests, 7 fixtures) | Partly (TSDoc) | Flowcharts only. No per-node source ranges (Mermaid does not expose them). Newer `@{ shape }` shapes other than `rounded` map to `unknown` with a warning. Arrow length (`--->`) not kept. Node entry sets a global jsdom `window`. |
-| Everything else                        | Planned     |                            |                | See phase plan                                                                                                                                                                                                                      |
+| Feature                                | Status      | Tested                                                               | Documented     | Notes                                                                                                                                                                                                                               |
+| -------------------------------------- | ----------- | -------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workspace tooling                      | Implemented | n/a                                                                  | Yes            |                                                                                                                                                                                                                                     |
+| Graph model (`@flowforge/core`)        | Implemented | Yes (14 unit tests)                                                  | Partly (TSDoc) | Flowchart only; layout, animation and simulation fields come in later phases                                                                                                                                                        |
+| Flowchart parser (`@flowforge/parser`) | Implemented | Yes (16 tests, 7 fixtures)                                           | Partly (TSDoc) | Flowcharts only. No per-node source ranges (Mermaid does not expose them). Newer `@{ shape }` shapes other than `rounded` map to `unknown` with a warning. Arrow length (`--->`) not kept. Node entry sets a global jsdom `window`. |
+| CI workflow + cycle check              | Implemented | Cycle check verified against an injected cycle; workflow not yet run | Yes            | Needs a GitHub remote                                                                                                                                                                                                               |
+| Everything else                        | Planned     |                                                                      |                | See phase plan                                                                                                                                                                                                                      |
 
 ## Risk register
 
