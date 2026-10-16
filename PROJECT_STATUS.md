@@ -37,18 +37,18 @@ This file is the single source of truth for what exists. If a feature is not mar
 
 ## Feature status
 
-| Feature                         | Status      | Tested | Documented | Notes                |
-| ------------------------------- | ----------- | ------ | ---------- | -------------------- |
-| Workspace tooling               | Implemented | n/a    | Yes        |                      |
-| Graph model (`@flowforge/core`) | Planned     |        |            | Phase 1              |
-| Flowchart parser adapter        | Planned     |        |            | Phase 1, see risk R1 |
-| Everything else                 | Planned     |        |            | See phase plan       |
+| Feature                         | Status      | Tested | Documented | Notes                         |
+| ------------------------------- | ----------- | ------ | ---------- | ----------------------------- |
+| Workspace tooling               | Implemented | n/a    | Yes        |                               |
+| Graph model (`@flowforge/core`) | Planned     |        |            | Phase 1                       |
+| Flowchart parser adapter        | Planned     |        |            | Phase 1, approach in ADR-0004 |
+| Everything else                 | Planned     |        |            | See phase plan                |
 
 ## Risk register
 
 | ID  | Risk                                                                                                                                 | Likelihood | Impact | Mitigation                                                                                            |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------- | ------ | ----------------------------------------------------------------------------------------------------- |
-| R1  | Mermaid's flowchart parser is not a stable Node API: `@mermaid-js/parser` does not cover flowcharts yet and `mermaid` expects a DOM. | High       | High   | Isolate behind an adapter (ADR-0003). Spike in Phase 1 and record the outcome as ADR-0004.            |
+| R1  | Mermaid's flowchart parser is not a stable Node API: `@mermaid-js/parser` does not cover flowcharts yet and `mermaid` expects a DOM. | High       | High   | Spike done: use Mermaid with a jsdom shim in Node (ADR-0004). Compatibility suite on every upgrade.   |
 | R2  | Official cloud icon licences may forbid redistribution in an npm package.                                                            | Medium     | High   | Verify each provider's terms in Phase 4; support user-supplied icon packs if bundling is not allowed. |
 | R3  | ELK.js layout is slow on graphs with hundreds of nodes.                                                                              | Medium     | Medium | Measure in Phase 3; run in a worker; cache by model hash.                                             |
 | R4  | Scope is far larger than one release.                                                                                                | High       | Medium | Strict phase gates; ship flowcharts well before other diagram types.                                  |
