@@ -1,0 +1,20 @@
+flowchart TB
+  subgraph outer[Outer]
+    direction LR
+    subgraph inner[Inner]
+      a
+    end
+    b
+  end
+  a <--> b
+  a --o c
+  a --x d
+  a --- e
+  a ==> f
+  a ~~~ g
+  a -.- h
+  c --> outer
+  s1>odd] --> s2{{hex}} --> s3[/lr/] --> s4[\rl\] --> s5[/tr\] --> s6[\itr/] --> s7(((dbl))) --> s8([st]) --> s9[[sub]] --> s10{dia}
+  z["<b>bold</b> & <script>x</script>"]
+  n1@{ shape: rounded, label: "new syntax" }
+  n2@{ shape: cloud }
