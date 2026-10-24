@@ -105,6 +105,13 @@ describe('parse: valid flowcharts', () => {
     expect(edge(model, 'a', 'b')!.label).toBe('x < y');
   });
 
+  it('decodes Mermaid entity codes in labels exactly once', async () => {
+    const model = await parseOk(fixture('entity-codes'));
+    expect(node(model, 'a')!.label).toBe('#1 "primary" <db> ♥ & &lt;');
+    expect(node(model, 'b')!.label).toBe('#unknowncode; stays');
+    expect(edge(model, 'a', 'b')!.label).toBe('<reads>');
+  });
+
   it('is deterministic across repeated parses', async () => {
     const source = fixture('azure-architecture');
     const first = serializeModel(await parseOk(source));

@@ -160,8 +160,29 @@ function toDirection(dir: string | undefined): Direction | undefined {
   }
 }
 
-/** Mermaid HTML-escapes label text; the model stores plain text and renderers escape on output. */
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: ' ',
+};
+
+/**
+ * Mermaid HTML-escapes label text, and replaces its own entity codes (`#quot;`, `#35;`) with
+ * placeholders (`ﬂ°quot¶ß`, `ﬂ°°35¶ß`) that it only decodes while rendering. The model stores
+ * plain text, so both are decoded here; renderers escape on output.
+ */
 function decodeEntities(text: string): string {
+  // HTML entities first: the placeholders contain no `&`, and decoding them last means a
+  // user's `#amp;lt;` stays the literal text `&lt;` instead of being decoded twice.
+  return decodeHtmlEntities(text)
+    .replace(/ﬂ°°(\d+)¶ß/g, (_, code: string) => String.fromCodePoint(Number(code)))
+    .replace(/ﬂ°(\w+)¶ß/g, (_, name: string) => NAMED_ENTITIES[name] ?? `#${name};`);
+}
+
+function decodeHtmlEntities(text: string): string {
   return text
     .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
     .replace(/&#x([0-9a-f]+);/gi, (_, code: string) => String.fromCodePoint(parseInt(code, 16)))
