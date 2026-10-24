@@ -35,9 +35,15 @@ importers:
       '@flowforge/core':
         specifier: workspace:*
         version: link:../core
+      '@flowforge/layout':
+        specifier: workspace:*
+        version: link:../layout
       '@flowforge/parser':
         specifier: workspace:*
         version: link:../parser
+      '@flowforge/renderer':
+        specifier: workspace:*
+        version: link:../renderer
       '@flowforge/transforms':
         specifier: workspace:*
         version: link:../transforms
@@ -83,6 +89,28 @@ importers:
       '@types/jsdom':
         specifier: ^30.0.0
         version: 30.0.0
+
+  packages/renderer:
+    dependencies:
+      '@flowforge/core':
+        specifier: workspace:*
+        version: link:../core
+      '@flowforge/layout':
+        specifier: workspace:*
+        version: link:../layout
+    devDependencies:
+      '@flowforge/parser':
+        specifier: workspace:*
+        version: link:../parser
+      '@types/jsdom':
+        specifier: ^30.0.0
+        version: 30.0.0
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.19.2
+      jsdom:
+        specifier: ^30.1.3
+        version: 30.1.3
 
   packages/transforms:
     dependencies:
