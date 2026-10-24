@@ -3,17 +3,20 @@
 FlowForge turns Mermaid diagrams into a typed, validated graph model, the foundation for polished,
 provider-aware architecture diagrams.
 
-> **Status: early development (Phase 1 of 8).** Today FlowForge parses Mermaid **flowcharts**
-> into a validated model with located error diagnostics. Layout, rendering, cloud icons, the web
-> editor, the CLI and animation do not exist yet. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for
-> exactly what works.
+> **Status: early development (Phase 2 of 8 complete).** FlowForge parses, validates,
+> transforms, compares and re-exports Mermaid **flowcharts**, from code or the `flowforge` CLI.
+> Layout, SVG rendering, cloud icons, the web editor and animation do not exist yet. See
+> [PROJECT_STATUS.md](PROJECT_STATUS.md) for exactly what works.
 
 ## What works today
 
 - Parse `flowchart` / `graph` source into a renderer-independent model: nodes, edges, nested
   subgraphs, all classic shapes, arrow heads and line styles, with Mermaid's own IDs preserved.
 - Syntax errors come back as diagnostics with a line number, never as thrown exceptions.
-- Deterministic JSON serialisation: the same diagram always produces the same bytes.
+- Export the model back to Mermaid. Anything Mermaid cannot carry is reported, not dropped.
+- Rename labels with naming templates, with diff, undo and revert. Transforms can change how a
+  diagram reads, never its structure.
+- Deterministic output: the same input always produces the same bytes.
 - Input limits for source size and edge count.
 
 Not supported yet: other diagram types (sequence, ER, class, state), per-node source positions,
@@ -31,7 +34,31 @@ pnpm build
 pnpm test
 ```
 
-## Usage
+## Command line
+
+After `pnpm build`, run the CLI with `node packages/cli/dist/bin.js` (the `flowforge` binary
+once published). Input is a Mermaid file, a `.json` model, or `-` for stdin.
+
+```sh
+flowforge validate diagram.mmd
+# diagram.mmd:3:4: error syntax-error: Parse error on line 3: Expecting 'TAGEND', ..., got 'SQS'
+
+flowforge inspect diagram.mmd            # summary; --json prints the full model
+flowforge transform diagram.mmd --template "{env}-{label}" --env prod --case kebab -o out.mmd
+flowforge diff before.mmd after.mmd      # exit 1 when they differ, like diff(1)
+```
+
+| Exit code | Meaning                                  |
+| --------- | ---------------------------------------- |
+| 0         | Success                                  |
+| 1         | Invalid diagram, or `diff` found changes |
+| 2         | Usage error                              |
+| 3         | File could not be read or written        |
+
+Global flags: `--json`, `-q/--quiet`, `-v/--verbose`. `transform` refuses to overwrite its own
+input unless you pass `--force`. Run `flowforge --help` for every option.
+
+## Library usage
 
 Packages are not published to npm yet. Inside this workspace:
 
@@ -71,10 +98,12 @@ if (result.ok) {
 
 ## Packages
 
-| Package             | Purpose                                                        |
-| ------------------- | -------------------------------------------------------------- |
-| `@flowforge/core`   | Graph model types, validation, diagnostics, serialisation      |
-| `@flowforge/parser` | Mermaid source to model; the only package that imports Mermaid |
+| Package                 | Purpose                                                                                        |
+| ----------------------- | ---------------------------------------------------------------------------------------------- |
+| `@flowforge/core`       | Graph model types, validation, diagnostics, serialisation                                      |
+| `@flowforge/parser`     | Mermaid source to model and back (`parse`, `toMermaid`); the only package that imports Mermaid |
+| `@flowforge/transforms` | Guarded transforms, naming profiles, model diff, undo/redo history                             |
+| `@flowforge/cli`        | The `flowforge` command                                                                        |
 
 ## Development
 
