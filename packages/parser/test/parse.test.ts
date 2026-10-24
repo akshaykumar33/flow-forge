@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { serializeModel, type GraphModel } from '@flowforge/core';
 import { parse } from '../src/node.js';
 
@@ -11,6 +11,10 @@ async function parseOk(source: string): Promise<GraphModel> {
   if (!result.ok) throw new Error(JSON.stringify(result.diagnostics, null, 2));
   return result.model;
 }
+
+// Loading jsdom and Mermaid takes about a second, more when test files run in parallel. Pay it
+// once here so individual tests measure parsing, not start-up.
+beforeAll(() => parse('flowchart LR\n  warm --> up'), 30_000);
 
 const node = (model: GraphModel, id: string) => model.nodes.find((n) => n.id === id);
 const edge = (model: GraphModel, source: string, target: string) =>
