@@ -1,0 +1,30 @@
+{
+  "name": "@flowforge/parser",
+  "version": "0.0.0",
+  "description": "Mermaid source to FlowForge graph model. The only FlowForge package that imports Mermaid.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "node": "./dist/node.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@flowforge/core": "workspace:*",
+    "jsdom": "^30.1.3",
+    "mermaid": "12.2.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^30.0.0"
+  }
+}

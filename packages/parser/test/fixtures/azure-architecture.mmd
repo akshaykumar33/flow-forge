@@ -1,0 +1,12 @@
+flowchart LR
+  user((User)) -->|HTTPS| fd[Azure Front Door]
+  subgraph azure[Azure Subscription]
+    subgraph vnet[Virtual Network]
+      direction TB
+      app[App Service] --> fn(Function App)
+    end
+    fn -.->|events| sb[[Service Bus]]
+    app --> sql[(Azure SQL Database)]
+  end
+  fd --> app
+  sb --> vnet
