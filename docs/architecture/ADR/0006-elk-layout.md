@@ -37,3 +37,8 @@ small cases.
   caches by model hash; the CLI reports timing in verbose mode.
 - `elkjs` is about 1.5 MB minified. It belongs in `@flowforge/layout` only.
 - Risk R3 is reduced from Medium likelihood to Low.
+- **Licence:** `elkjs` is `EPL-2.0 OR GPL-3.0-or-later`, not permissive. FlowForge uses it as an
+  unmodified dependency, which EPL-2.0 permits from an MIT project: its copyleft applies to
+  changes to ELK itself. If FlowForge ever ships a bundle that includes ELK (the web app), the
+  bundle must carry ELK's licence notice and say where its source is available. Tracked as risk R6
+  and to be confirmed by the owner before any publish.

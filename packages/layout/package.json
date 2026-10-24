@@ -1,0 +1,29 @@
+{
+  "name": "@flowforge/layout",
+  "version": "0.0.0",
+  "description": "Deterministic ELK layout and readability checks for the FlowForge graph model.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@flowforge/core": "workspace:*",
+    "elkjs": "0.12.0"
+  },
+  "devDependencies": {
+    "@flowforge/parser": "workspace:*",
+    "@types/node": "^24.19.2"
+  }
+}
