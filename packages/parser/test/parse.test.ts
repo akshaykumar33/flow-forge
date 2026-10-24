@@ -100,7 +100,7 @@ describe('parse: valid flowcharts', () => {
     const model = await parseOk(fixture('html-labels'));
     const label = node(model, 'a')!.label;
     expect(label).not.toMatch(/script|alert/);
-    expect(label).toContain('<b>bold</b> & ');
+    expect(label).toBe('<b>bold</b> &');
     expect(node(model, 'b')!.label).toBe('Tom\'s "db"');
     expect(edge(model, 'a', 'b')!.label).toBe('x < y');
   });

@@ -81,7 +81,7 @@ export function flowDbToModel(db: MermaidFlowDb): { model: GraphModel; diagnosti
     const direction = toDirection(s.dir);
     return {
       id: s.id,
-      label: decodeEntities(s.title ?? s.id),
+      label: toLabel(s.title ?? s.id),
       ...optional('parentId', parentOf.get(s.id)),
       ...optional('direction', direction),
     };
@@ -93,7 +93,7 @@ export function flowDbToModel(db: MermaidFlowDb): { model: GraphModel; diagnosti
     if (groupIds.has(vertex.id)) continue;
     nodes.push({
       id: vertex.id,
-      label: decodeEntities(vertex.text ?? vertex.id),
+      label: toLabel(vertex.text ?? vertex.id),
       shape: toShape(vertex, diagnostics),
       ...optional('groupId', parentOf.get(vertex.id)),
       inferences: [],
@@ -106,7 +106,7 @@ export function flowDbToModel(db: MermaidFlowDb): { model: GraphModel; diagnosti
       id: edge.id ?? `L_${edge.start}_${edge.end}_${index}`,
       source: edge.start,
       target: edge.end,
-      label: decodeEntities(edge.text ?? ''),
+      label: toLabel(edge.text ?? ''),
       stroke: STROKES[edge.stroke ?? 'normal'] ?? 'solid',
       arrowStart,
       arrowEnd,
@@ -166,8 +166,13 @@ const NAMED_ENTITIES: Record<string, string> = {
   gt: '>',
   quot: '"',
   apos: "'",
-  nbsp: ' ',
+  nbsp: String.fromCharCode(0xa0),
 };
+
+/** Mermaid trims quoted labels when it reads them, so the model stores them trimmed too. */
+function toLabel(text: string): string {
+  return decodeEntities(text).trim();
+}
 
 /**
  * Mermaid HTML-escapes label text, and replaces its own entity codes (`#quot;`, `#35;`) with
