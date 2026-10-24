@@ -213,22 +213,48 @@ function strokeStyle(edge: GraphEdge, theme: Theme): string {
 }
 
 function markerRefs(edge: GraphEdge, prefix: string): string {
-  const ref = (head: ArrowHead) => `url(#${prefix}-${head})`;
   return (
-    (edge.arrowEnd === 'none' ? '' : ` marker-end="${ref(edge.arrowEnd)}"`) +
-    (edge.arrowStart === 'none' ? '' : ` marker-start="${ref(edge.arrowStart)}"`)
+    (edge.arrowEnd === 'none' ? '' : ` marker-end="url(#${prefix}-${edge.arrowEnd})"`) +
+    (edge.arrowStart === 'none' ? '' : ` marker-start="url(#${prefix}-${edge.arrowStart}-start)"`)
   );
 }
 
-/** One marker per head type; `auto-start-reverse` flips start markers to point outwards. */
+/**
+ * One end marker and one start marker per head type, all `orient="auto"`. SVG 2's
+ * `auto-start-reverse` would need only one, but resvg, older Inkscape and many PDF converters
+ * ignore it and draw every head pointing right, so start markers carry a mirrored shape instead.
+ */
 function markers(prefix: string, theme: Theme): string {
-  const shapes: Record<(typeof HEADS)[number], string> = {
-    arrow: `<path d="M0 0L10 5L0 10z" fill="${theme.edge}"/>`,
-    circle: `<circle cx="5" cy="5" r="4" fill="${theme.background}" stroke="${theme.edge}" stroke-width="1.5"/>`,
-    cross: `<path d="M1 1L9 9M9 1L1 9" stroke="${theme.edge}" stroke-width="1.5"/>`,
+  // Scaled to the line so heads stay readable: 12px at the default 1.25px stroke, larger for the
+  // heavier high-contrast lines. Fixed 8px heads were barely visible in rendered output.
+  const size = num(Math.max(12, theme.strokeWidth * 8));
+  const shapes: Record<
+    (typeof HEADS)[number],
+    { end: string; start: string; refX: [number, number] }
+  > = {
+    arrow: {
+      end: `<path d="M0 0L10 5L0 10z" fill="${theme.edge}"/>`,
+      start: `<path d="M10 0L0 5L10 10z" fill="${theme.edge}"/>`,
+      refX: [9, 1],
+    },
+    circle: {
+      end: `<circle cx="5" cy="5" r="4" fill="${theme.background}" stroke="${theme.edge}" stroke-width="1.5"/>`,
+      start: `<circle cx="5" cy="5" r="4" fill="${theme.background}" stroke="${theme.edge}" stroke-width="1.5"/>`,
+      refX: [5, 5],
+    },
+    cross: {
+      end: `<path d="M1 1L9 9M9 1L1 9" stroke="${theme.edge}" stroke-width="1.5"/>`,
+      start: `<path d="M1 1L9 9M9 1L1 9" stroke="${theme.edge}" stroke-width="1.5"/>`,
+      refX: [5, 5],
+    },
   };
-  return HEADS.map(
-    (head) =>
-      `<marker id="${prefix}-${head}" viewBox="0 0 10 10" refX="${head === 'arrow' ? 9 : 5}" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${shapes[head]}</marker>`,
-  ).join('');
+  const marker = (id: string, refX: number, body: string) =>
+    `<marker id="${id}" viewBox="0 0 10 10" refX="${refX}" refY="5" markerWidth="${size}" markerHeight="${size}" markerUnits="userSpaceOnUse" orient="auto">${body}</marker>`;
+  return HEADS.map((head) => {
+    const s = shapes[head];
+    return (
+      marker(`${prefix}-${head}`, s.refX[0], s.end) +
+      marker(`${prefix}-${head}-start`, s.refX[1], s.start)
+    );
+  }).join('');
 }

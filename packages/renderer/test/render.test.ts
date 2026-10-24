@@ -70,7 +70,9 @@ describe('renderSvg output', () => {
   it('applies arrowheads and line styles', async () => {
     const doc = parseSvg((await render(fixture('kitchen-sink'))).svg);
     const path = (id: string) => doc.querySelector(`.ff-edges [data-edge-id="${id}"] path`)!;
-    expect(path('L_a_b_0').getAttribute('marker-start')).toBe('url(#ff-arrow)');
+    expect(path('L_a_b_0').getAttribute('marker-start')).toBe('url(#ff-arrow-start)');
+    // SVG 2 auto-start-reverse is ignored by resvg and many converters; heads must not rely on it.
+    expect(doc.querySelectorAll('marker[orient="auto-start-reverse"]')).toHaveLength(0);
     expect(path('L_a_c_0').getAttribute('marker-end')).toBe('url(#ff-circle)');
     expect(path('L_a_d_0').getAttribute('marker-end')).toBe('url(#ff-cross)');
     expect(path('L_a_h_0').getAttribute('stroke-dasharray')).toBe('4 4');
