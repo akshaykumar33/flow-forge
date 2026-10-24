@@ -66,7 +66,7 @@ describe('usage', () => {
 
   it('rejects unknown commands, unknown flags and misplaced flags with exit 2', async () => {
     for (const argv of [
-      ['render', 'a.mmd'],
+      ['publish', 'a.mmd'],
       ['validate', 'a.mmd', '--bogus'],
       ['validate', 'a.mmd', '--template', 'x'],
       ['validate'],
@@ -268,4 +268,51 @@ describe('built binary', () => {
     },
     30_000,
   );
+});
+
+describe('render', () => {
+  it('writes a themed SVG and keeps the input untouched', async () => {
+    const h = harness({ 'a.mmd': BASIC });
+    expect(await run(['render', 'a.mmd', '--theme', 'enterprise-dark', '-o', 'a.svg'], h.io)).toBe(
+      EXIT.ok,
+    );
+    const svg = h.files.get(resolve('/work', 'a.svg'))!;
+    expect(svg).toMatch(/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+    expect(svg).toContain('fill="#0b0e13"');
+    expect(svg).toContain('data-node-id="db"');
+    expect(h.files.get(resolve('/work', 'a.mmd'))).toBe(BASIC);
+    expect(h.err()).toBe('');
+  });
+
+  it('prints SVG to stdout by default', async () => {
+    const h = harness({ 'a.mmd': BASIC });
+    expect(await run(['render', 'a.mmd'], h.io)).toBe(EXIT.ok);
+    expect(h.out()).toContain('</svg>');
+  });
+
+  it('rejects unknown themes, formats and misplaced flags', async () => {
+    const h = harness({ 'a.mmd': BASIC });
+    expect(await run(['render', 'a.mmd', '--theme', 'neon'], h.io)).toBe(EXIT.usage);
+    expect(await run(['render', 'a.mmd', '--format', 'png'], h.io)).toBe(EXIT.usage);
+    expect(await run(['render', 'a.mmd', '--template', 'x'], h.io)).toBe(EXIT.usage);
+    expect(await run(['transform', 'a.mmd', '--tidy', '--theme', 'enterprise-dark'], h.io)).toBe(
+      EXIT.usage,
+    );
+    expect(h.err()).toContain('--theme does not apply to "transform"');
+  });
+
+  it('refuses to overwrite its input and reports invalid diagrams', async () => {
+    const h = harness({ 'a.mmd': BASIC, 'bad.mmd': 'flowchart LR\n  A --> \n  B[[[\n' });
+    expect(await run(['render', 'a.mmd', '-o', 'a.mmd'], h.io)).toBe(EXIT.usage);
+    expect(await run(['render', 'bad.mmd'], h.io)).toBe(EXIT.failed);
+    expect(h.out()).toBe('');
+  });
+
+  it('reports layout notes in verbose mode', async () => {
+    const source = 'flowchart LR\n  subgraph g[G]\n    direction TB\n    a --> b\n  end\n';
+    const h = harness({ 'g.mmd': source });
+    expect(await run(['render', 'g.mmd', '-v', '-o', 'g.svg'], h.io)).toBe(EXIT.ok);
+    expect(h.err()).toContain('info layout-group-direction-ignored');
+    expect(h.err()).toMatch(/laid out 2 nodes in \d+ ms/);
+  });
 });

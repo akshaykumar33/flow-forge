@@ -1,6 +1,7 @@
 import { parseArgs, type ParseArgsConfig } from 'node:util';
 import { diff } from './commands/diff.js';
 import { inspect } from './commands/inspect.js';
+import { render } from './commands/render.js';
 import { transform } from './commands/transform.js';
 import { validate } from './commands/validate.js';
 import { CliError, EXIT, nodeIo, type CliIo } from './io.js';
@@ -16,6 +17,7 @@ Commands
   inspect <file>           Summarise a diagram (--json prints the full model)
   transform <file>         Apply transforms and print the result
   diff <a> <b>             Compare two diagrams by element id
+  render <file>            Lay out and draw the diagram as SVG
 
 <file> is Mermaid source, a .json model, or - for stdin.
 
@@ -37,7 +39,14 @@ Transform options
   -o, --output <path>      Write to a file instead of stdout
   --force                  Allow --output to overwrite the input file
 
-Exit codes: 0 success · 1 invalid input or differences found · 2 usage error · 3 file error
+Render options
+  --theme <t>              enterprise-light (default) | enterprise-dark | high-contrast
+  --format <f>             svg (default)
+  -o, --output <path>      Write to a file instead of stdout
+  --force                  Allow --output to overwrite the input file
+
+Exit codes: 0 success · 1 invalid input, differences found, or a broken layout ·
+            2 usage error · 3 file error
 `;
 
 const OPTIONS = {
@@ -54,23 +63,34 @@ const OPTIONS = {
   env: { type: 'string' },
   region: { type: 'string' },
   group: { type: 'string', multiple: true },
-  format: { type: 'string', default: 'mermaid' },
+  format: { type: 'string' },
+  theme: { type: 'string' },
   output: { type: 'string', short: 'o' },
   force: { type: 'boolean', default: false },
 } satisfies ParseArgsConfig['options'];
 
-const TRANSFORM_ONLY = [
-  'tidy',
-  'template',
-  'case',
-  'prefix',
-  'suffix',
-  'env',
-  'region',
-  'group',
-  'output',
-  'force',
-] as const;
+type OptionName = keyof typeof OPTIONS;
+const GLOBAL: readonly OptionName[] = ['json', 'quiet', 'verbose', 'help', 'version'];
+/** Flags each command accepts beyond the global ones; anything else is a usage error. */
+const COMMAND_OPTIONS: Record<string, readonly OptionName[]> = {
+  validate: [],
+  inspect: [],
+  diff: [],
+  transform: [
+    'tidy',
+    'template',
+    'case',
+    'prefix',
+    'suffix',
+    'env',
+    'region',
+    'group',
+    'format',
+    'output',
+    'force',
+  ],
+  render: ['theme', 'format', 'output', 'force'],
+};
 
 /** Runs the CLI and returns its exit code. Never calls `process.exit`, so it is testable. */
 export async function run(argv: readonly string[], io: CliIo = nodeIo()): Promise<number> {
@@ -110,13 +130,17 @@ async function dispatch(argv: readonly string[], io: CliIo): Promise<number> {
   if (values.quiet && values.verbose) {
     throw new CliError('--quiet and --verbose cannot be combined.', EXIT.usage);
   }
-  if (command !== 'transform') {
-    const misplaced = TRANSFORM_ONLY.filter(
-      (name) => values[name] !== undefined && values[name] !== false,
-    );
-    if (misplaced.length > 0) {
-      throw new CliError(`--${misplaced[0]} only applies to "transform".`, EXIT.usage);
-    }
+  const allowed = COMMAND_OPTIONS[command];
+  if (allowed === undefined) throw new CliError(`Unknown command "${command}".`, EXIT.usage);
+  const misplaced = (Object.keys(OPTIONS) as OptionName[]).find(
+    (name) =>
+      !GLOBAL.includes(name) &&
+      !allowed.includes(name) &&
+      values[name] !== undefined &&
+      values[name] !== false,
+  );
+  if (misplaced !== undefined) {
+    throw new CliError(`--${misplaced} does not apply to "${command}".`, EXIT.usage);
   }
 
   const global = { json: values.json, quiet: values.quiet, verbose: values.verbose };
@@ -143,13 +167,22 @@ async function dispatch(argv: readonly string[], io: CliIo): Promise<number> {
         env: values.env,
         region: values.region,
         group: values.group,
-        format: values.format,
+        format: values.format ?? 'mermaid',
         output: values.output,
         force: values.force,
       });
     case 'diff':
       expectArgs(2, 'diff <a> <b>');
       return diff(io, args[0]!, args[1]!, global);
+    case 'render':
+      expectArgs(1, 'render <file> [--theme <t>] [-o <file.svg>]');
+      return render(io, args[0]!, {
+        ...global,
+        format: values.format ?? 'svg',
+        theme: values.theme,
+        output: values.output,
+        force: values.force,
+      });
     default:
       throw new CliError(`Unknown command "${command}".`, EXIT.usage);
   }
