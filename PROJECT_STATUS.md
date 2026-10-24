@@ -1,6 +1,6 @@
 # Project status
 
-Last updated: 2026-10-24. Current phase: **3 — Layout and rendering, next**. Phases 0–2 are done locally. Phase 2 exit gate: same input gives same output (determinism tests in parser, transforms and CLI); ambiguous mappings are never applied silently (suggestions need `applySuggestion`; no recognisers exist yet, they arrive in Phase 4). The CI workflow exists but has never run, because there is no remote yet.
+Last updated: 2026-10-24. Current phase: **3 — Layout and rendering, core complete locally**. Phases 0–2 are done. Phase 3 exit gate: every fixture lays out and renders with no overlap or clipping (readability checks in tests), theme switching works, and exported SVG is valid strict XML. Moved to Phase 5 (they need the interactive canvas): zoom, pan, node selection. Still open in Phase 3: the brief's other themes (cloud architecture, blueprint, minimal technical, custom), PNG export, and tighter spacing where many edges leave one node. The CI workflow exists but has never run, because there is no remote yet.
 
 This file is the single source of truth for what exists. If a feature is not marked
 **Implemented** here, it does not work yet.
