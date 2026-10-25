@@ -45,6 +45,7 @@ flowforge validate diagram.mmd
 
 flowforge inspect diagram.mmd            # summary; --json prints the full model
 flowforge transform diagram.mmd --template "{env}-{label}" --env prod --case kebab -o out.mmd
+flowforge transform diagram.mmd --recognize --format json -o tagged.json   # tag cloud services
 flowforge diff before.mmd after.mmd      # exit 1 when they differ, like diff(1)
 flowforge render diagram.mmd --theme enterprise-dark -o diagram.svg
 flowforge render diagram.mmd --theme blueprint --format png -o diagram.png
@@ -105,6 +106,7 @@ if (result.ok) {
 | `@flowforge/core`       | Graph model types, validation, diagnostics, serialisation                                      |
 | `@flowforge/parser`     | Mermaid source to model and back (`parse`, `toMermaid`); the only package that imports Mermaid |
 | `@flowforge/transforms` | Guarded transforms, naming profiles, model diff, undo/redo history                             |
+| `@flowforge/providers`  | Azure, AWS and Google Cloud service registry and cautious recognition (no icons, ADR-0007)     |
 | `@flowforge/layout`     | ELK layout and readability checks                                                              |
 | `@flowforge/renderer`   | Themed, sanitised SVG output (6 themes)                                                        |
 | `@flowforge/cli`        | The `flowforge` command                                                                        |

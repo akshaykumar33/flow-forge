@@ -104,6 +104,10 @@ importers:
       '@flowforge/transforms':
         specifier: workspace:*
         version: link:../transforms
+    devDependencies:
+      '@types/node':
+        specifier: ^24.19.2
+        version: 24.19.2
 
   packages/renderer:
     dependencies:

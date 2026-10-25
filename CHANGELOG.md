@@ -10,6 +10,15 @@ All notable changes to FlowForge are recorded here. The format follows
 
 - Three more themes: cloud-architecture, blueprint and minimal-technical.
 - PNG export: `flowforge render --format png -o file.png`, with `--scale` (default 2x).
+- `@flowforge/providers`: 60 Azure, AWS and Google Cloud services and generic categories.
+- `flowforge transform --recognize [--provider azure|aws|gcp]` tags nodes with the services they
+  name. Names several providers share, or single words inside longer labels, become suggestions;
+  generic words such as "database" only get a category.
+
+### Changed
+
+- `flowforge transform --json` prints one JSON report with changes, suggestions and diagnostics,
+  also when the input is invalid.
 
 ## [0.1.0] - 2026-10-25
 
