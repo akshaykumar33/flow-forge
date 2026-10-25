@@ -1,0 +1,31 @@
+{
+  "name": "@flowforge/cli",
+  "version": "0.0.0",
+  "description": "The flowforge command: validate, inspect, transform and diff Mermaid flowcharts.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "flowforge": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@flowforge/core": "workspace:*",
+    "@flowforge/parser": "workspace:*",
+    "@flowforge/transforms": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0"
+  }
+}
