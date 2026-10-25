@@ -6,6 +6,7 @@ export {
   type ParseOptions,
   type ParseResult,
 } from './parse.js';
+export { toMermaid, type EmitResult } from './emit.js';
 
 /**
  * Node entry. Mermaid's bundled DOMPurify needs a `window` at import time (ADR-0004), so a jsdom

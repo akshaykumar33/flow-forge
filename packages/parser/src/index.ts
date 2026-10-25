@@ -6,6 +6,7 @@ export {
   type ParseOptions,
   type ParseResult,
 } from './parse.js';
+export { toMermaid, type EmitResult } from './emit.js';
 
 /** Browser entry: Mermaid uses the real `window`. Node resolves `./node.js` instead. */
 export const parse = createParser(

@@ -100,9 +100,16 @@ describe('parse: valid flowcharts', () => {
     const model = await parseOk(fixture('html-labels'));
     const label = node(model, 'a')!.label;
     expect(label).not.toMatch(/script|alert/);
-    expect(label).toContain('<b>bold</b> & ');
+    expect(label).toBe('<b>bold</b> &');
     expect(node(model, 'b')!.label).toBe('Tom\'s "db"');
     expect(edge(model, 'a', 'b')!.label).toBe('x < y');
+  });
+
+  it('decodes Mermaid entity codes in labels exactly once', async () => {
+    const model = await parseOk(fixture('entity-codes'));
+    expect(node(model, 'a')!.label).toBe('#1 "primary" <db> ♥ & &lt;');
+    expect(node(model, 'b')!.label).toBe('#unknowncode; stays');
+    expect(edge(model, 'a', 'b')!.label).toBe('<reads>');
   });
 
   it('is deterministic across repeated parses', async () => {
