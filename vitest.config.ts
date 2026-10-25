@@ -10,6 +10,7 @@ export default defineConfig({
       '@flowforge/core': source('./packages/core/src/index.ts'),
       '@flowforge/parser': source('./packages/parser/src/node.ts'),
       '@flowforge/transforms': source('./packages/transforms/src/index.ts'),
+      '@flowforge/layout': source('./packages/layout/src/index.ts'),
     },
   },
   test: {
