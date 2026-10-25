@@ -358,3 +358,78 @@ describe('render to PNG', () => {
     expect(await run(['validate', 'a.mmd', '--scale', '2'], h.io)).toBe(EXIT.usage);
   });
 });
+
+describe('transform --recognize', () => {
+  const CLOUD = `flowchart LR
+  subgraph aws[AWS account]
+    gw[API Gateway] --> fn[AWS Lambda]
+  end
+  fn --> db[(database)]
+  fn --> sql[(Azure SQL Database)]
+  x[API Gateway]
+`;
+
+  it('tags certain services, gives generic labels a category, and only suggests the rest', async () => {
+    const h = harness({ 'c.mmd': CLOUD });
+    expect(await run(['transform', 'c.mmd', '--recognize', '--format', 'json'], h.io)).toBe(
+      EXIT.ok,
+    );
+    const nodes = JSON.parse(h.out()).nodes as {
+      id: string;
+      inferences: { key: string; value: string }[];
+    }[];
+    const value = (id: string, key: string) =>
+      nodes.find((n) => n.id === id)!.inferences.find((i) => i.key === key)?.value;
+    expect(value('fn', 'service')).toBe('aws.lambda');
+    expect(value('sql', 'service')).toBe('azure.sql-database');
+    expect(value('db', 'category')).toBe('database');
+    expect(value('db', 'service')).toBeUndefined();
+    expect(value('gw', 'service')).toBeUndefined();
+    expect(h.err()).toContain('suggestion: node "gw" may be Amazon API Gateway (confidence 0.8)');
+    expect(h.err()).toContain('suggestion: node "x" may be API Gateway (confidence 0.5)');
+  });
+
+  it('fills {category} in naming templates from recognition', async () => {
+    const h = harness({ 'c.mmd': CLOUD });
+    await run(
+      [
+        'transform',
+        'c.mmd',
+        '--recognize',
+        '--template',
+        '{category}-{label}',
+        '--case',
+        'kebab',
+        '--format',
+        'json',
+        '-q',
+      ],
+      h.io,
+    );
+    const labels = JSON.parse(h.out()).nodes.map((n: { label: string }) => n.label);
+    expect(labels).toContain('serverless-aws-lambda');
+    expect(labels).toContain('database-database');
+  });
+
+  it('includes suggestions in --json output and validates --provider', async () => {
+    const h = harness({ 'c.mmd': CLOUD });
+    await run(['transform', 'c.mmd', '--recognize', '--provider', 'gcp', '--json'], h.io);
+    const report = JSON.parse(h.err());
+    expect(report.suggestions.map((s: { elementId: string }) => s.elementId)).toContain('x');
+    const h2 = harness({ 'c.mmd': CLOUD });
+    expect(await run(['transform', 'c.mmd', '--recognize', '--provider', 'oracle'], h2.io)).toBe(
+      EXIT.usage,
+    );
+    expect(await run(['transform', 'c.mmd', '--tidy', '--provider', 'aws'], h2.io)).toBe(
+      EXIT.usage,
+    );
+  });
+});
+
+describe('transform --json on failure', () => {
+  it('still prints one JSON report with the diagnostics', async () => {
+    const h = harness({ 'bad.mmd': 'flowchart LR\n  A --> \n  B[[[\n' });
+    expect(await run(['transform', 'bad.mmd', '--tidy', '--json'], h.io)).toBe(EXIT.failed);
+    expect(JSON.parse(h.err()).diagnostics[0].code).toBe('syntax-error');
+  });
+});

@@ -265,8 +265,7 @@ describe('suggestions', () => {
           {
             transformId: 'suggester',
             elementId: 'db',
-            field: 'label',
-            value: 'Azure SQL Database',
+            label: 'Azure SQL Database',
             inference: {
               key: 'service',
               value: 'azure.sql-database',

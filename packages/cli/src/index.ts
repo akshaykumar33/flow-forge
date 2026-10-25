@@ -31,6 +31,9 @@ Global options
 
 Transform options
   --tidy                   Trim and collapse whitespace in labels
+  --recognize              Tag nodes with the cloud services they name; list uncertain
+                           matches as suggestions (never applied automatically)
+  --provider <p>           azure | aws | gcp: settles names several providers share
   --template <t>           Rename labels, e.g. "{env}-{label}-{seq}"
                            Tokens: {label} {prefix} {suffix} {env} {region} {seq} {category}
   --case <c>               preserve | kebab | snake | title | upper
@@ -59,6 +62,8 @@ const OPTIONS = {
   help: { type: 'boolean', short: 'h', default: false },
   version: { type: 'boolean', default: false },
   tidy: { type: 'boolean', default: false },
+  recognize: { type: 'boolean', default: false },
+  provider: { type: 'string' },
   template: { type: 'string' },
   case: { type: 'string' },
   prefix: { type: 'string' },
@@ -82,6 +87,8 @@ const COMMAND_OPTIONS: Record<string, readonly OptionName[]> = {
   diff: [],
   transform: [
     'tidy',
+    'recognize',
+    'provider',
     'template',
     'case',
     'prefix',
@@ -164,6 +171,8 @@ async function dispatch(argv: readonly string[], io: CliIo): Promise<number> {
       return transform(io, args[0]!, {
         ...global,
         tidy: values.tidy,
+        recognize: values.recognize,
+        provider: values.provider,
         template: values.template,
         case: values.case,
         prefix: values.prefix,

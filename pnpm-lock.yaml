@@ -41,6 +41,9 @@ importers:
       '@flowforge/parser':
         specifier: workspace:*
         version: link:../parser
+      '@flowforge/providers':
+        specifier: workspace:*
+        version: link:../providers
       '@flowforge/renderer':
         specifier: workspace:*
         version: link:../renderer
@@ -92,6 +95,15 @@ importers:
       '@types/jsdom':
         specifier: ^30.0.0
         version: 30.0.0
+
+  packages/providers:
+    dependencies:
+      '@flowforge/core':
+        specifier: workspace:*
+        version: link:../core
+      '@flowforge/transforms':
+        specifier: workspace:*
+        version: link:../transforms
 
   packages/renderer:
     dependencies:

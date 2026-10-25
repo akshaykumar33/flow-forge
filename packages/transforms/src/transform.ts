@@ -7,10 +7,10 @@ import { diffModels, structuralChanges, type Change } from './diff.js';
  */
 export interface Suggestion {
   transformId: string;
+  /** Node the suggestion applies to. */
   elementId: string;
-  /** Node field the suggestion would set. */
-  field: 'label';
-  value: string;
+  /** New label, when the suggestion renames the node. Omitted to only attach the inference. */
+  label?: string;
   inference: Inference;
 }
 
@@ -101,7 +101,7 @@ export function applySuggestion(model: GraphModel, suggestion: Suggestion): Grap
       node.id === suggestion.elementId
         ? {
             ...node,
-            [suggestion.field]: suggestion.value,
+            ...(suggestion.label !== undefined && { label: suggestion.label }),
             inferences: [
               ...node.inferences.filter((i) => i.key !== suggestion.inference.key),
               { ...suggestion.inference, provenance: 'user' as const },
