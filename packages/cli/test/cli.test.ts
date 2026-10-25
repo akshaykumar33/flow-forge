@@ -1,10 +1,10 @@
 import { execFile } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { parse } from '@flowforge/parser';
-import { EXIT, run, type CliIo } from '../src/index.js';
+import { EXIT, run, VERSION, type CliIo } from '../src/index.js';
 
 const BASIC = `flowchart LR
   user((User)) -->|HTTPS| api[Orders  API]
@@ -260,7 +260,7 @@ describe('built binary', () => {
     async () => {
       const execFileAsync = promisify(execFile);
       const { stdout } = await execFileAsync(process.execPath, [bin, '--version']);
-      expect(stdout.trim()).toBe('0.0.0');
+      expect(stdout.trim()).toBe('0.1.0');
       const failure = await execFileAsync(process.execPath, [bin, 'validate', 'missing.mmd']).catch(
         (e) => e,
       );
@@ -314,5 +314,15 @@ describe('render', () => {
     expect(await run(['render', 'g.mmd', '-v', '-o', 'g.svg'], h.io)).toBe(EXIT.ok);
     expect(h.err()).toContain('info layout-group-direction-ignored');
     expect(h.err()).toMatch(/laid out 2 nodes in \d+ ms/);
+  });
+});
+
+describe('version', () => {
+  it('matches the package version, so --version never drifts from releases', async () => {
+    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+    expect(VERSION).toBe(pkg.version);
+    const h = harness();
+    expect(await run(['--version'], h.io)).toBe(EXIT.ok);
+    expect(h.out()).toBe(`${pkg.version}\n`);
   });
 });
