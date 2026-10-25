@@ -22,10 +22,11 @@
   },
   "dependencies": {
     "@flowforge/core": "workspace:*",
-    "@flowforge/parser": "workspace:*",
-    "@flowforge/transforms": "workspace:*",
     "@flowforge/layout": "workspace:*",
-    "@flowforge/renderer": "workspace:*"
+    "@flowforge/parser": "workspace:*",
+    "@flowforge/renderer": "workspace:*",
+    "@flowforge/transforms": "workspace:*",
+    "@resvg/resvg-js": "^2.6.2"
   },
   "devDependencies": {
     "@types/node": "^24.0.0"

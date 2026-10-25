@@ -26,6 +26,7 @@ interface Harness {
   out: () => string;
   err: () => string;
   files: Map<string, string>;
+  bytes: Map<string, Uint8Array>;
 }
 
 function harness(files: Record<string, string> = {}, stdin = ''): Harness {
@@ -33,6 +34,7 @@ function harness(files: Record<string, string> = {}, stdin = ''): Harness {
   const store = new Map(Object.entries(files).map(([k, v]) => [resolve(cwd, k), v]));
   let out = '';
   let err = '';
+  const bytes = new Map<string, Uint8Array>();
   return {
     io: {
       stdout: (t) => void (out += t),
@@ -43,12 +45,14 @@ function harness(files: Record<string, string> = {}, stdin = ''): Harness {
         return text;
       },
       writeText: async (p, t) => void store.set(p, t),
+      writeBytes: async (p, b) => void bytes.set(p, b),
       readStdin: async () => stdin,
       cwd,
     },
     out: () => out,
     err: () => err,
     files: store,
+    bytes,
   };
 }
 
@@ -324,5 +328,33 @@ describe('version', () => {
     const h = harness();
     expect(await run(['--version'], h.io)).toBe(EXIT.ok);
     expect(h.out()).toBe(`${pkg.version}\n`);
+  });
+});
+
+describe('render to PNG', () => {
+  const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  const widthOf = (png: Uint8Array) => new DataView(png.buffer, png.byteOffset).getUint32(16);
+
+  it('writes a real PNG at the requested scale', async () => {
+    const h = harness({ 'a.mmd': BASIC });
+    expect(await run(['render', 'a.mmd', '--format', 'png', '-o', 'a.png'], h.io)).toBe(EXIT.ok);
+    expect(
+      await run(['render', 'a.mmd', '--format', 'png', '--scale', '1', '-o', 'b.png'], h.io),
+    ).toBe(EXIT.ok);
+    const twoX = h.bytes.get(resolve('/work', 'a.png'))!;
+    const oneX = h.bytes.get(resolve('/work', 'b.png'))!;
+    expect([...twoX.slice(0, 8)]).toEqual(PNG_SIGNATURE);
+    expect(widthOf(twoX)).toBe(widthOf(oneX) * 2);
+  }, 30_000);
+
+  it('requires -o and a sane scale', async () => {
+    const h = harness({ 'a.mmd': BASIC });
+    expect(await run(['render', 'a.mmd', '--format', 'png'], h.io)).toBe(EXIT.usage);
+    expect(h.err()).toContain('PNG output is binary');
+    expect(
+      await run(['render', 'a.mmd', '--format', 'png', '--scale', '50', '-o', 'x.png'], h.io),
+    ).toBe(EXIT.usage);
+    expect(await run(['render', 'a.mmd', '--format', 'gif', '-o', 'x.gif'], h.io)).toBe(EXIT.usage);
+    expect(await run(['validate', 'a.mmd', '--scale', '2'], h.io)).toBe(EXIT.usage);
   });
 });

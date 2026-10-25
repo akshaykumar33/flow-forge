@@ -47,6 +47,7 @@ flowforge inspect diagram.mmd            # summary; --json prints the full model
 flowforge transform diagram.mmd --template "{env}-{label}" --env prod --case kebab -o out.mmd
 flowforge diff before.mmd after.mmd      # exit 1 when they differ, like diff(1)
 flowforge render diagram.mmd --theme enterprise-dark -o diagram.svg
+flowforge render diagram.mmd --theme blueprint --format png -o diagram.png
 ```
 
 | Exit code | Meaning                                  |
@@ -105,7 +106,7 @@ if (result.ok) {
 | `@flowforge/parser`     | Mermaid source to model and back (`parse`, `toMermaid`); the only package that imports Mermaid |
 | `@flowforge/transforms` | Guarded transforms, naming profiles, model diff, undo/redo history                             |
 | `@flowforge/layout`     | ELK layout and readability checks                                                              |
-| `@flowforge/renderer`   | Themed, sanitised SVG output                                                                   |
+| `@flowforge/renderer`   | Themed, sanitised SVG output (6 themes)                                                        |
 | `@flowforge/cli`        | The `flowforge` command                                                                        |
 
 ## Development
