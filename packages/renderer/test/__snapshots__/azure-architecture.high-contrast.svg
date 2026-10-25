@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1246" height="284" viewBox="0 0 1246 284" role="img" aria-labelledby="ff-title ff-desc" font-family="&#39;IBM Plex Sans&#39;, &#39;Segoe UI&#39;, system-ui, -apple-system, sans-serif">
+<title id="ff-title">Flowchart</title>
+<desc id="ff-desc">Flowchart with 6 nodes, 6 connections, 2 groups.</desc>
+<defs><marker id="ff-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0L10 5L0 10z" fill="#000000"/></marker><marker id="ff-arrow-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto"><path d="M10 0L0 5L10 10z" fill="#000000"/></marker><marker id="ff-circle" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto"><circle cx="5" cy="5" r="4" fill="#ffffff" stroke="#000000" stroke-width="1.5"/></marker><marker id="ff-circle-start" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto"><circle cx="5" cy="5" r="4" fill="#ffffff" stroke="#000000" stroke-width="1.5"/></marker><marker id="ff-cross" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto"><path d="M1 1L9 9M9 1L1 9" stroke="#000000" stroke-width="1.5"/></marker><marker id="ff-cross-start" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto"><path d="M1 1L9 9M9 1L1 9" stroke="#000000" stroke-width="1.5"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<g class="ff-groups">
+<g data-group-id="azure">
+<title>Azure Subscription</title>
+<rect x="477" y="24" width="745" height="236" rx="10" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text font-size="12" font-weight="600" fill="#000000" text-anchor="start"><tspan x="497" y="42.5" dy="0.35em">Azure Subscription</tspan></text>
+</g>
+<g data-group-id="vnet">
+<title>Virtual Network</title>
+<rect x="717" y="107" width="292" height="124" rx="10" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text font-size="12" font-weight="600" fill="#000000" text-anchor="start"><tspan x="737" y="125.5" dy="0.35em">Virtual Network</tspan></text>
+</g>
+</g>
+<g class="ff-edges" fill="none">
+<g data-edge-id="L_user_fd_0">
+<path d="M83 186.33L258 186.33" stroke="#000000" stroke-width="2" marker-end="url(#ff-arrow)"/>
+</g>
+<g data-edge-id="L_app_fn_0">
+<path d="M851 178L871 178" stroke="#000000" stroke-width="2" marker-end="url(#ff-arrow)"/>
+</g>
+<g data-edge-id="L_fn_sb_0">
+<path d="M989 178L1024 178L1024 97L627 97" stroke="#000000" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#ff-arrow)"/>
+</g>
+<g data-edge-id="L_app_sql_0">
+<path d="M851 192.67L861 192.67L861 210L1034 210" stroke="#000000" stroke-width="2" marker-end="url(#ff-arrow)"/>
+</g>
+<g data-edge-id="L_fd_app_0">
+<path d="M408 186.33L702 186.33L702 185.33L737 185.33" stroke="#000000" stroke-width="2" marker-end="url(#ff-arrow)"/>
+</g>
+<g data-edge-id="L_sb_vnet_0">
+<path d="M627 111.67L637 111.67L637 175.33L717 175.33" stroke="#000000" stroke-width="2" marker-end="url(#ff-arrow)"/>
+</g>
+</g>
+<g class="ff-edge-labels">
+<g data-edge-id="L_user_fd_0">
+<rect x="147" y="193.33" width="47" height="21" rx="4" fill="#ffffff"/>
+<text font-size="12" font-weight="400" fill="#000000" text-anchor="middle"><tspan x="170.5" y="203.83" dy="0.35em">HTTPS</tspan></text>
+</g>
+<g data-edge-id="L_fn_sb_0">
+<rect x="647" y="73" width="45" height="21" rx="4" fill="#ffffff"/>
+<text font-size="12" font-weight="400" fill="#000000" text-anchor="middle"><tspan x="669.5" y="83.5" dy="0.35em">events</tspan></text>
+</g>
+</g>
+<g class="ff-nodes">
+<g data-node-id="user">
+<title>User</title>
+<circle cx="53.5" cy="186.33" r="29.5" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text font-size="14" font-weight="500" fill="#000000" text-anchor="middle"><tspan x="53.5" y="186.33" dy="0.35em">User</tspan></text>
+</g>
+<g data-node-id="fd">
+<title>Azure Front Door</title>
+<rect x="258" y="164.33" width="150" height="44" rx="6" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text font-size="14" font-weight="500" fill="#000000" text-anchor="middle"><tspan x="333" y="186.33" dy="0.35em">Azure Front Door</tspan></text>
+</g>
+<g data-node-id="app">
+<title>App Service</title>
+<rect x="737" y="163.33" width="114" height="44" rx="6" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text font-size="14" font-weight="500" fill="#000000" text-anchor="middle"><tspan x="794" y="185.33" dy="0.35em">App Service</tspan></text>
+</g>
+<g data-node-id="fn">
+<title>Function App</title>
+<rect x="871" y="156" width="118" height="44" rx="14" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text font-size="14" font-weight="500" fill="#000000" text-anchor="middle"><tspan x="930" y="178" dy="0.35em">Function App</tspan></text>
+</g>
+<g data-node-id="sb">
+<title>Service Bus</title>
+<rect x="497" y="82.33" width="130" height="44" rx="4" fill="#ffffff" stroke="#000000" stroke-width="2"/><path d="M505 82.33V126.33M619 82.33V126.33" fill="none" stroke="#000000" stroke-width="2"/>
+<text font-size="14" font-weight="500" fill="#000000" text-anchor="middle"><tspan x="562" y="104.33" dy="0.35em">Service Bus</tspan></text>
+</g>
+<g data-node-id="sql">
+<title>Azure SQL Database</title>
+<path d="M1034 188A84 8 0 0 1 1202 188V232A84 8 0 0 1 1034 232Z" fill="#ffffff" stroke="#000000" stroke-width="2"/><path d="M1034 188A84 8 0 0 0 1202 188" fill="none" stroke="#000000" stroke-width="2"/>
+<text font-size="14" font-weight="500" fill="#000000" text-anchor="middle"><tspan x="1118" y="210" dy="0.35em">Azure SQL Database</tspan></text>
+</g>
+</g>
+</svg>

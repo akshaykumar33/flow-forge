@@ -3,9 +3,9 @@
 FlowForge turns Mermaid diagrams into a typed, validated graph model, the foundation for polished,
 provider-aware architecture diagrams.
 
-> **Status: early development (Phase 2 of 8 complete).** FlowForge parses, validates,
-> transforms, compares and re-exports Mermaid **flowcharts**, from code or the `flowforge` CLI.
-> Layout, SVG rendering, cloud icons, the web editor and animation do not exist yet. See
+> **Status: early development (Phase 3 of 8 in progress).** FlowForge parses, validates,
+> transforms, compares, re-exports, lays out and renders Mermaid **flowcharts** to SVG, from code or the `flowforge` CLI.
+> Cloud icons, the web editor and animation do not exist yet. See
 > [PROJECT_STATUS.md](PROJECT_STATUS.md) for exactly what works.
 
 ## What works today
@@ -46,6 +46,7 @@ flowforge validate diagram.mmd
 flowforge inspect diagram.mmd            # summary; --json prints the full model
 flowforge transform diagram.mmd --template "{env}-{label}" --env prod --case kebab -o out.mmd
 flowforge diff before.mmd after.mmd      # exit 1 when they differ, like diff(1)
+flowforge render diagram.mmd --theme enterprise-dark -o diagram.svg
 ```
 
 | Exit code | Meaning                                  |
@@ -103,6 +104,8 @@ if (result.ok) {
 | `@flowforge/core`       | Graph model types, validation, diagnostics, serialisation                                      |
 | `@flowforge/parser`     | Mermaid source to model and back (`parse`, `toMermaid`); the only package that imports Mermaid |
 | `@flowforge/transforms` | Guarded transforms, naming profiles, model diff, undo/redo history                             |
+| `@flowforge/layout`     | ELK layout and readability checks                                                              |
+| `@flowforge/renderer`   | Themed, sanitised SVG output                                                                   |
 | `@flowforge/cli`        | The `flowforge` command                                                                        |
 
 ## Development
