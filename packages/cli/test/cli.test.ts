@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, sep } from 'node:path';
 import { promisify } from 'node:util';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { parse } from '@flowforge/parser';
@@ -46,6 +46,12 @@ function harness(files: Record<string, string> = {}, stdin = ''): Harness {
       },
       writeText: async (p, t) => void store.set(p, t),
       writeBytes: async (p, b) => void bytes.set(p, b),
+      readSvgFiles: async (dir) => {
+        const prefix = dir.endsWith(sep) ? dir : dir + sep;
+        return [...store]
+          .filter(([p]) => p.startsWith(prefix) && p.endsWith('.svg'))
+          .map(([p, svg]) => ({ path: p.slice(prefix.length), svg }));
+      },
       readStdin: async () => stdin,
       cwd,
     },
@@ -431,5 +437,36 @@ describe('transform --json on failure', () => {
     const h = harness({ 'bad.mmd': 'flowchart LR\n  A --> \n  B[[[\n' });
     expect(await run(['transform', 'bad.mmd', '--tidy', '--json'], h.io)).toBe(EXIT.failed);
     expect(JSON.parse(h.err()).diagnostics[0].code).toBe('syntax-error');
+  });
+});
+
+describe('render --icon-pack', () => {
+  const ICON =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64"/></svg>';
+  const DIAGRAM = 'flowchart LR\n  fn[AWS Lambda] --> db[(DynamoDB)] --> q[queue]\n';
+
+  it('draws icons from the user’s pack for recognised services only', async () => {
+    const h = harness({
+      'd.mmd': DIAGRAM,
+      'aws-icons/Arch_AWS-Lambda_64.svg': ICON,
+      'aws-icons/sub/Arch_Amazon-DynamoDB_64.svg': ICON,
+    });
+    expect(
+      await run(['render', 'd.mmd', '--icon-pack', 'aws:aws-icons', '-o', 'd.svg', '-v'], h.io),
+    ).toBe(EXIT.ok);
+    const svg = h.files.get(resolve('/work', 'd.svg'))!;
+    expect((svg.match(/<image /g) ?? []).length).toBe(2);
+    expect(svg).toMatch(/data-node-id="fn">[\s\S]*?<image /);
+    expect(svg).not.toMatch(/data-node-id="q">[\s\S]*?<image [\s\S]*?<\/g>\n<\/g>/);
+    expect(h.err()).toContain('icons for 2 aws services');
+  });
+
+  it('renders without icons when no pack is given, and rejects malformed pack values', async () => {
+    const h = harness({ 'd.mmd': DIAGRAM });
+    expect(await run(['render', 'd.mmd', '-o', 'd.svg'], h.io)).toBe(EXIT.ok);
+    expect(h.files.get(resolve('/work', 'd.svg'))).not.toContain('<image');
+    expect(await run(['render', 'd.mmd', '--icon-pack', 'oracle:./x'], h.io)).toBe(EXIT.usage);
+    expect(await run(['render', 'd.mmd', '--icon-pack', 'aws'], h.io)).toBe(EXIT.usage);
+    expect(await run(['validate', 'd.mmd', '--icon-pack', 'aws:x'], h.io)).toBe(EXIT.usage);
   });
 });

@@ -14,6 +14,8 @@ export interface Box {
 export interface NodeLayout extends Box {
   /** The label split into the lines the renderer must draw, so wrapping matches the sizing. */
   lines: string[];
+  /** Square reserved above the label for a service icon, when the node has one. */
+  icon?: Box;
 }
 
 export interface EdgeLayout {

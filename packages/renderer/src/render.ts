@@ -15,7 +15,16 @@ export interface RenderOptions {
   nodeFont?: TextStyle;
   edgeLabelFont?: TextStyle;
   groupTitleFont?: TextStyle;
+  /**
+   * SVG icon source per node id, drawn in the box layout reserved (`NodeLayout.icon`). Icons are
+   * embedded as `<image>` data URIs, never inlined, so browsers render them in secure static
+   * mode: scripts and external references inside an icon file cannot run (ADR-0007).
+   */
+  icons?: Readonly<Record<string, string>>;
 }
+
+/** Icons larger than this are skipped; official provider icons are a few kilobytes. */
+export const MAX_ICON_BYTES = 256 * 1024;
 
 const HEADS: Exclude<ArrowHead, 'none'>[] = ['arrow', 'circle', 'cross'];
 
@@ -113,19 +122,16 @@ export function renderSvg(
   out.push('<g class="ff-nodes">');
   for (const node of model.nodes) {
     const box = layout.nodes[node.id]!;
+    const icon = box.icon ? options.icons?.[node.id] : undefined;
+    // With an icon, the label is centred in the space below it.
+    const textTop = icon && box.icon ? box.icon.y + box.icon.height + 6 : box.y;
+    const textCy = textTop + (box.y + box.height - textTop) / 2;
     out.push(
       `<g data-node-id="${escapeXml(node.id)}">`,
       `<title>${escapeXml(node.label)}</title>`,
       shapeMarkup(node.shape, box, paint),
-      textBlock(
-        box.lines,
-        box.x + box.width / 2,
-        box.y + box.height / 2,
-        nodeFont,
-        theme.nodeText,
-        'middle',
-        true,
-      ),
+      ...(icon && box.icon ? [iconImage(icon, box.icon)].filter(Boolean) : []),
+      textBlock(box.lines, box.x + box.width / 2, textCy, nodeFont, theme.nodeText, 'middle', true),
       '</g>',
     );
   }
@@ -257,4 +263,45 @@ function markers(prefix: string, theme: Theme): string {
       marker(`${prefix}-${head}-start`, s.refX[1], s.start)
     );
   }).join('');
+}
+
+/** Uniform scaling only (`xMidYMid meet`): icons are never stretched, cropped or distorted. */
+function iconImage(
+  svg: string,
+  box: { x: number; y: number; width: number; height: number },
+): string {
+  const bytes = utf8(svg);
+  if (bytes.length > MAX_ICON_BYTES || !/<svg[\s>]/i.test(svg)) return '';
+  return `<image href="data:image/svg+xml;base64,${base64(bytes)}" x="${num(box.x)}" y="${num(box.y)}" width="${num(box.width)}" height="${num(box.height)}" preserveAspectRatio="xMidYMid meet"/>`;
+}
+
+const BASE64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+/** Standard base64 without Node's Buffer, so the renderer also runs in browsers and workers. */
+function base64(bytes: Uint8Array): string {
+  let out = '';
+  for (let i = 0; i < bytes.length; i += 3) {
+    const a = bytes[i]!;
+    const b = bytes[i + 1];
+    const c = bytes[i + 2];
+    out += BASE64[a >> 2];
+    out += BASE64[((a & 3) << 4) | ((b ?? 0) >> 4)];
+    out += b === undefined ? '=' : BASE64[((b & 15) << 2) | ((c ?? 0) >> 6)];
+    out += c === undefined ? '=' : BASE64[c & 63];
+  }
+  return out;
+}
+
+/** UTF-8 bytes of a string, without TextEncoder, which ES2022 typings and some runtimes lack. */
+function utf8(text: string): Uint8Array {
+  const out: number[] = [];
+  for (const ch of text) {
+    const c = ch.codePointAt(0)!;
+    if (c < 0x80) out.push(c);
+    else if (c < 0x800) out.push(0xc0 | (c >> 6), 0x80 | (c & 63));
+    else if (c < 0x10000) out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+    else
+      out.push(0xf0 | (c >> 18), 0x80 | ((c >> 12) & 63), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+  }
+  return Uint8Array.from(out);
 }

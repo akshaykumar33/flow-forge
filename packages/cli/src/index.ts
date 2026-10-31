@@ -48,6 +48,9 @@ Render options
                            (default: enterprise-light)
   --format <f>             svg (default) | png (needs -o)
   --scale <n>              PNG pixel density, 0.25 to 8 (default 2)
+  --icon-pack <p>:<dir>    Official icon pack you downloaded, e.g. aws:./Asset-Package
+                           (repeatable; providers: azure, aws, gcp). FlowForge ships no
+                           provider icons; recognised services get icons from your packs.
   -o, --output <path>      Write to a file instead of stdout
   --force                  Allow --output to overwrite the input file
 
@@ -74,6 +77,7 @@ const OPTIONS = {
   format: { type: 'string' },
   theme: { type: 'string' },
   scale: { type: 'string' },
+  'icon-pack': { type: 'string', multiple: true },
   output: { type: 'string', short: 'o' },
   force: { type: 'boolean', default: false },
 } satisfies ParseArgsConfig['options'];
@@ -100,7 +104,7 @@ const COMMAND_OPTIONS: Record<string, readonly OptionName[]> = {
     'output',
     'force',
   ],
-  render: ['theme', 'format', 'scale', 'output', 'force'],
+  render: ['theme', 'format', 'scale', 'icon-pack', 'output', 'force'],
 };
 
 /** Runs the CLI and returns its exit code. Never calls `process.exit`, so it is testable. */
@@ -194,6 +198,7 @@ async function dispatch(argv: readonly string[], io: CliIo): Promise<number> {
         format: values.format ?? 'svg',
         theme: values.theme,
         scale: values.scale,
+        iconPack: values['icon-pack'],
         output: values.output,
         force: values.force,
       });

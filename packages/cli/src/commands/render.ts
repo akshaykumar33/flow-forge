@@ -1,6 +1,14 @@
 import { resolve } from 'node:path';
 import { checkReadability, layoutModel } from '@flowforge/layout';
+import {
+  iconsForModel,
+  indexIconPack,
+  recognizeServicesTransform,
+  type IconIndex,
+  type ProviderId,
+} from '@flowforge/providers';
 import { renderSvg, themes, type ThemeId } from '@flowforge/renderer';
+import { runTransform } from '@flowforge/transforms';
 import { formatDiagnostic, json } from '../format.js';
 import { CliError, EXIT, loadDiagram, type CliIo } from '../io.js';
 import type { GlobalOptions } from '../options.js';
@@ -10,6 +18,8 @@ export interface RenderOptions extends GlobalOptions {
   theme?: string | undefined;
   /** PNG pixel density relative to the SVG's CSS pixels. */
   scale?: string | undefined;
+  /** `<provider>:<folder>` entries pointing at the user's downloaded official icon packs. */
+  iconPack?: string[] | undefined;
   output?: string | undefined;
   force: boolean;
 }
@@ -35,6 +45,7 @@ export async function render(io: CliIo, file: string, options: RenderOptions): P
       EXIT.usage,
     );
   }
+  const packs = (options.iconPack ?? []).map(parseIconPack);
   const themeIds = Object.keys(themes);
   const theme = options.theme ?? 'enterprise-light';
   if (!themeIds.includes(theme)) {
@@ -59,14 +70,42 @@ export async function render(io: CliIo, file: string, options: RenderOptions): P
   loaded.diagnostics.forEach(report);
   if (!loaded.model) return EXIT.failed;
 
+  let model = loaded.model;
+  let icons: Record<string, string> = {};
+  if (packs.length > 0) {
+    // Icons need to know which service each node is; only certain recognitions are used.
+    const recognised = runTransform(recognizeServicesTransform, model, {});
+    if (recognised.ok) model = recognised.model;
+    const indexes: IconIndex[] = [];
+    for (const pack of packs) {
+      let files;
+      try {
+        files = await io.readSvgFiles(resolve(io.cwd, pack.dir));
+      } catch (error) {
+        if (error instanceof CliError) throw error;
+        throw new CliError(`Cannot read icon pack ${pack.dir}: ${String(error)}.`, EXIT.io);
+      }
+      const report = indexIconPack(pack.provider, files);
+      indexes.push(report.index);
+      if (options.verbose) {
+        io.stderr(
+          `${pack.dir}: ${files.length} SVG files, icons for ${report.index.size} ${pack.provider} services\n`,
+        );
+      }
+    }
+    icons = iconsForModel(model, indexes);
+  }
+
   const started = performance.now();
-  const { layout, diagnostics: layoutNotes } = await layoutModel(loaded.model);
+  const { layout, diagnostics: layoutNotes } = await layoutModel(model, {
+    iconNodeIds: new Set(Object.keys(icons)),
+  });
   const elapsed = performance.now() - started;
-  const findings = [...layoutNotes, ...checkReadability(loaded.model, layout)];
+  const findings = [...layoutNotes, ...checkReadability(model, layout)];
   if (!options.json)
     findings.filter((d) => d.severity !== 'info' || options.verbose).forEach(report);
 
-  const svg = renderSvg(loaded.model, layout, { theme: theme as ThemeId });
+  const svg = renderSvg(model, layout, { theme: theme as ThemeId, icons });
   if (options.output !== undefined) {
     try {
       const target = resolve(io.cwd, options.output);
@@ -118,4 +157,20 @@ async function svgToPng(svg: string, scale: number): Promise<Uint8Array> {
   })
     .render()
     .asPng();
+}
+
+const PROVIDERS: readonly ProviderId[] = ['azure', 'aws', 'gcp'];
+
+/** `aws:./icons` → { provider: 'aws', dir: './icons' }. Only the first colon splits, so Windows paths work. */
+function parseIconPack(value: string): { provider: ProviderId; dir: string } {
+  const colon = value.indexOf(':');
+  const provider = value.slice(0, colon) as ProviderId;
+  const dir = value.slice(colon + 1);
+  if (colon < 0 || !PROVIDERS.includes(provider) || dir === '') {
+    throw new CliError(
+      `--icon-pack must look like <provider>:<folder> with provider ${PROVIDERS.join(', ')}; got "${value}".`,
+      EXIT.usage,
+    );
+  }
+  return { provider, dir };
 }

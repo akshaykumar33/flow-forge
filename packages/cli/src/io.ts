@@ -1,5 +1,5 @@
-import { readFile, stat, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 import { deserializeModel, type Diagnostic, type GraphModel } from '@flowforge/core';
 import { parse } from '@flowforge/parser';
 
@@ -18,12 +18,18 @@ export interface CliIo {
   readText(path: string): Promise<string>;
   writeText(path: string, text: string): Promise<void>;
   writeBytes(path: string, bytes: Uint8Array): Promise<void>;
+  /** Every .svg file under `dir`, with its path relative to `dir`. Capped for safety. */
+  readSvgFiles(dir: string): Promise<{ path: string; svg: string }[]>;
   readStdin(): Promise<string>;
   cwd: string;
 }
 
 /** Inputs larger than this are refused before reading, so a stray huge file cannot hang the CLI. */
 export const MAX_INPUT_BYTES = 5 * 1024 * 1024;
+
+/** Limits for reading an icon pack folder. */
+export const MAX_ICON_FILES = 20_000;
+export const MAX_ICON_FILE_BYTES = 256 * 1024;
 
 export class CliError extends Error {
   constructor(
@@ -51,6 +57,24 @@ export function nodeIo(): CliIo {
     },
     writeText: (path, text) => writeFile(path, text, 'utf8'),
     writeBytes: (path, bytes) => writeFile(path, bytes),
+    async readSvgFiles(dir) {
+      const entries = await readdir(dir, { recursive: true, withFileTypes: true });
+      const svgs = entries.filter((e) => e.isFile() && e.name.toLowerCase().endsWith('.svg'));
+      if (svgs.length > MAX_ICON_FILES) {
+        throw new CliError(
+          `${dir} has ${svgs.length} SVG files; the limit is ${MAX_ICON_FILES}.`,
+          EXIT.io,
+        );
+      }
+      const files: { path: string; svg: string }[] = [];
+      for (const entry of svgs) {
+        const full = join(entry.parentPath, entry.name);
+        // Official icons are a few kilobytes; skip anything large rather than read it.
+        if ((await stat(full)).size > MAX_ICON_FILE_BYTES) continue;
+        files.push({ path: full.slice(dir.length + 1), svg: await readFile(full, 'utf8') });
+      }
+      return files;
+    },
     async readStdin() {
       const chunks: Buffer[] = [];
       let size = 0;
