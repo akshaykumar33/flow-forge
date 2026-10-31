@@ -1,7 +1,7 @@
 {
   "name": "flowforge-monorepo",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "FlowForge: Mermaid transformation, architecture visualization and flow simulation.",
   "license": "MIT",
   "packageManager": "pnpm@10.33.0",

@@ -9,7 +9,7 @@ import { CliError, EXIT, nodeIo, type CliIo } from './io.js';
 
 export { EXIT, MAX_INPUT_BYTES, nodeIo, type CliIo } from './io.js';
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 
 const USAGE = `Usage: flowforge <command> [options]
 
