@@ -1,6 +1,6 @@
 {
   "name": "@flowforge/parser",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Mermaid source to FlowForge graph model. The only FlowForge package that imports Mermaid.",
   "license": "MIT",
   "type": "module",

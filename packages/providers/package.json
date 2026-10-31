@@ -1,6 +1,6 @@
 {
   "name": "@flowforge/providers",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Cloud service registry and cautious service recognition for FlowForge. Contains no provider icons (ADR-0007).",
   "license": "MIT",
   "type": "module",

@@ -270,7 +270,7 @@ describe('built binary', () => {
     async () => {
       const execFileAsync = promisify(execFile);
       const { stdout } = await execFileAsync(process.execPath, [bin, '--version']);
-      expect(stdout.trim()).toBe('0.1.0');
+      expect(stdout.trim()).toBe('0.2.0');
       const failure = await execFileAsync(process.execPath, [bin, 'validate', 'missing.mmd']).catch(
         (e) => e,
       );
