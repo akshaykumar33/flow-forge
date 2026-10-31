@@ -17,6 +17,7 @@ export interface CliIo {
   stderr(text: string): void;
   readText(path: string): Promise<string>;
   writeText(path: string, text: string): Promise<void>;
+  writeBytes(path: string, bytes: Uint8Array): Promise<void>;
   readStdin(): Promise<string>;
   cwd: string;
 }
@@ -49,6 +50,7 @@ export function nodeIo(): CliIo {
       return readFile(path, 'utf8');
     },
     writeText: (path, text) => writeFile(path, text, 'utf8'),
+    writeBytes: (path, bytes) => writeFile(path, bytes),
     async readStdin() {
       const chunks: Buffer[] = [];
       let size = 0;

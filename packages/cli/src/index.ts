@@ -4,6 +4,7 @@ import { inspect } from './commands/inspect.js';
 import { render } from './commands/render.js';
 import { transform } from './commands/transform.js';
 import { validate } from './commands/validate.js';
+import { themes } from '@flowforge/renderer';
 import { CliError, EXIT, nodeIo, type CliIo } from './io.js';
 
 export { EXIT, MAX_INPUT_BYTES, nodeIo, type CliIo } from './io.js';
@@ -17,7 +18,7 @@ Commands
   inspect <file>           Summarise a diagram (--json prints the full model)
   transform <file>         Apply transforms and print the result
   diff <a> <b>             Compare two diagrams by element id
-  render <file>            Lay out and draw the diagram as SVG
+  render <file>            Lay out and draw the diagram as SVG or PNG
 
 <file> is Mermaid source, a .json model, or - for stdin.
 
@@ -40,8 +41,10 @@ Transform options
   --force                  Allow --output to overwrite the input file
 
 Render options
-  --theme <t>              enterprise-light (default) | enterprise-dark | high-contrast
-  --format <f>             svg (default)
+  --theme <t>              ${Object.keys(themes).join(' | ')}
+                           (default: enterprise-light)
+  --format <f>             svg (default) | png (needs -o)
+  --scale <n>              PNG pixel density, 0.25 to 8 (default 2)
   -o, --output <path>      Write to a file instead of stdout
   --force                  Allow --output to overwrite the input file
 
@@ -65,6 +68,7 @@ const OPTIONS = {
   group: { type: 'string', multiple: true },
   format: { type: 'string' },
   theme: { type: 'string' },
+  scale: { type: 'string' },
   output: { type: 'string', short: 'o' },
   force: { type: 'boolean', default: false },
 } satisfies ParseArgsConfig['options'];
@@ -89,7 +93,7 @@ const COMMAND_OPTIONS: Record<string, readonly OptionName[]> = {
     'output',
     'force',
   ],
-  render: ['theme', 'format', 'output', 'force'],
+  render: ['theme', 'format', 'scale', 'output', 'force'],
 };
 
 /** Runs the CLI and returns its exit code. Never calls `process.exit`, so it is testable. */
@@ -175,11 +179,12 @@ async function dispatch(argv: readonly string[], io: CliIo): Promise<number> {
       expectArgs(2, 'diff <a> <b>');
       return diff(io, args[0]!, args[1]!, global);
     case 'render':
-      expectArgs(1, 'render <file> [--theme <t>] [-o <file.svg>]');
+      expectArgs(1, 'render <file> [--theme <t>] [--format svg|png] [-o <file>]');
       return render(io, args[0]!, {
         ...global,
         format: values.format ?? 'svg',
         theme: values.theme,
+        scale: values.scale,
         output: values.output,
         force: values.force,
       });

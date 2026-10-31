@@ -4,6 +4,13 @@ All notable changes to FlowForge are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/). Before 1.0.0, minor versions may change public APIs.
 
+## [Unreleased]
+
+### Added
+
+- Three more themes: cloud-architecture, blueprint and minimal-technical.
+- PNG export: `flowforge render --format png -o file.png`, with `--scale` (default 2x).
+
 ## [0.1.0] - 2026-10-25
 
 First preview. Packages are not yet published to npm; build from source.
