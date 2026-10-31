@@ -3,9 +3,10 @@
 FlowForge turns Mermaid diagrams into a typed, validated graph model, the foundation for polished,
 provider-aware architecture diagrams.
 
-> **Status: early development (Phase 3 of 8 in progress).** FlowForge parses, validates,
-> transforms, compares, re-exports, lays out and renders Mermaid **flowcharts** to SVG, from code or the `flowforge` CLI.
-> Cloud icons, the web editor and animation do not exist yet. See
+> **Status: early development (Phase 4 of 8 in progress).** FlowForge parses, validates,
+> transforms, recognises cloud services in, compares, re-exports, lays out and renders Mermaid
+> **flowcharts** to SVG or PNG, from code or the `flowforge` CLI. The web editor and animation do
+> not exist yet. See
 > [PROJECT_STATUS.md](PROJECT_STATUS.md) for exactly what works.
 
 ## What works today
@@ -46,6 +47,7 @@ flowforge validate diagram.mmd
 flowforge inspect diagram.mmd            # summary; --json prints the full model
 flowforge transform diagram.mmd --template "{env}-{label}" --env prod --case kebab -o out.mmd
 flowforge transform diagram.mmd --recognize --format json -o tagged.json   # tag cloud services
+flowforge render diagram.mmd --icon-pack aws:./Asset-Package -o diagram.svg  # icons from your pack
 flowforge diff before.mmd after.mmd      # exit 1 when they differ, like diff(1)
 flowforge render diagram.mmd --theme enterprise-dark -o diagram.svg
 flowforge render diagram.mmd --theme blueprint --format png -o diagram.png
@@ -127,3 +129,18 @@ if (result.ok) {
 - [Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) and
   [decision records](docs/architecture/ADR/)
 - [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [License](LICENSE) (MIT)
+
+## Cloud icons
+
+FlowForge ships **no** Azure, AWS or Google Cloud icons: their terms allow the icons in
+architecture diagrams but not redistribution inside software ([ADR-0007](docs/architecture/ADR/0007-provider-icons-not-bundled.md)).
+Download the official packs yourself, accepting each provider's terms, and point `render` at them:
+
+| Provider     | Official pack                                                                           | Example flag                                     |
+| ------------ | --------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Azure        | [Azure architecture icons](https://learn.microsoft.com/en-us/azure/architecture/icons/) | `--icon-pack azure:./Azure_Public_Service_Icons` |
+| AWS          | [AWS Architecture Icons](https://aws.amazon.com/architecture/icons/)                    | `--icon-pack aws:./Asset-Package`                |
+| Google Cloud | [Google Cloud icons](https://cloud.google.com/icons)                                    | `--icon-pack gcp:./gcp-icons`                    |
+
+Nodes whose label clearly names a service (see `transform --recognize`) get the matching icon
+above their label. Icons are embedded as images, so scripts inside an icon file cannot run.

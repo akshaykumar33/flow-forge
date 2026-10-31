@@ -175,3 +175,50 @@ describe('themes', () => {
     await expect(svg).toMatchFileSnapshot(`./__snapshots__/azure-architecture.${id}.svg`);
   });
 });
+
+describe('icons', () => {
+  const icon =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18"><rect width="18" height="18"/></svg>';
+
+  async function withIcon(svgIcon: string) {
+    const model = await parseOk('flowchart LR\n  fn[AWS Lambda] --> db[(database)]\n');
+    const { layout } = await layoutModel(model, { iconNodeIds: new Set(['fn']) });
+    return { layout, svg: renderSvg(model, layout, { icons: { fn: svgIcon } }) };
+  }
+
+  it('embeds the icon as a data-URI image in the space layout reserved, label below it', async () => {
+    const { layout, svg } = await withIcon(icon);
+    const doc = parseSvg(svg);
+    const image = doc.querySelector('[data-node-id="fn"] image')!;
+    expect(image.getAttribute('href')).toMatch(/^data:image\/svg\+xml;base64,/);
+    expect(image.getAttribute('preserveAspectRatio')).toBe('xMidYMid meet');
+    const box = layout.nodes.fn!.icon!;
+    expect(Number(image.getAttribute('y'))).toBe(box.y);
+    const textY = Number(doc.querySelector('[data-node-id="fn"] tspan')!.getAttribute('y'));
+    expect(textY).toBeGreaterThan(box.y + box.height);
+    expect(doc.querySelector('[data-node-id="db"] image')).toBeNull();
+  });
+
+  it('round-trips the icon bytes exactly, including non-ASCII', async () => {
+    const unicode = icon.replace('<rect', '<!-- é ✓ --><rect');
+    const { svg } = await withIcon(unicode);
+    const href = parseSvg(svg).querySelector('image')!.getAttribute('href')!;
+    const decoded = Buffer.from(href.split(',')[1]!, 'base64').toString('utf8');
+    expect(decoded).toBe(unicode);
+  });
+
+  it('keeps hostile icon content inert inside the image data', async () => {
+    const hostile =
+      '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"><script>alert(2)</script></svg>';
+    const { svg } = await withIcon(hostile);
+    const doc = parseSvg(svg);
+    expect(doc.querySelectorAll('script')).toHaveLength(0);
+    const attributes = [...doc.querySelectorAll('*')].flatMap((el) => [...el.attributes]);
+    expect(attributes.filter((a) => /^on/i.test(a.name))).toEqual([]);
+  });
+
+  it('skips files that are not SVG or are too large', async () => {
+    expect((await withIcon('not an svg')).svg).not.toContain('<image');
+    expect((await withIcon(`<svg>${'x'.repeat(300 * 1024)}</svg>`)).svg).not.toContain('<image');
+  });
+});

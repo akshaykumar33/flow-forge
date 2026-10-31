@@ -23,6 +23,10 @@ export interface LayoutOptions {
   layerSpacing?: number;
   /** Labels wider than this wrap. Default 200. */
   maxLabelWidth?: number;
+  /** Nodes that will draw an icon above their label; they get room for it. */
+  iconNodeIds?: ReadonlySet<string>;
+  /** Icon edge length in px. Default 32. */
+  iconSize?: number;
 }
 
 export interface LayoutOutput {
@@ -41,6 +45,7 @@ const PADDING_X = 16;
 const PADDING_Y = 12;
 const MIN_NODE = { width: 96, height: 44 };
 const GROUP_PADDING = 20;
+const ICON_GAP = 6;
 
 // elkjs is CommonJS: Node's ESM loader returns `module.exports` (the class itself), some bundlers
 // return `{ default }`, and its typings describe neither under NodeNext. Accept both shapes and
@@ -63,6 +68,7 @@ export async function layoutModel(
   const edgeFont = options.edgeLabelFont ?? { fontSize: 12, fontWeight: 400 };
   const titleFont = options.groupTitleFont ?? { fontSize: 12, fontWeight: 600 };
   const maxLabelWidth = options.maxLabelWidth ?? 200;
+  const iconSize = options.iconSize ?? 32;
   const diagnostics: Diagnostic[] = [];
 
   const nodeLines = new Map<string, string[]>();
@@ -70,7 +76,12 @@ export async function layoutModel(
   for (const node of model.nodes) {
     const lines = wrapText(node.label, maxLabelWidth, nodeFont, measure);
     nodeLines.set(node.id, lines);
-    elkNodes.set(node.id, { id: node.id, ...nodeSize(node, lines, nodeFont, measure) });
+    const size = nodeSize(node, lines, nodeFont, measure);
+    // An icon sits above the label: grow the box by the icon plus a gap, never squeeze the text.
+    if (options.iconNodeIds?.has(node.id)) {
+      size.height += iconSize + ICON_GAP + (node.shape === 'cylinder' ? 10 : 0);
+    }
+    elkNodes.set(node.id, { id: node.id, ...size });
   }
 
   const groupTitles = new Map<string, string[]>();
@@ -154,7 +165,20 @@ export async function layoutModel(
 
   const nodes: Record<string, NodeLayout> = {};
   for (const node of model.nodes) {
-    nodes[node.id] = { ...box(placed.get(node.id)!), lines: nodeLines.get(node.id)! };
+    const nodeBox = box(placed.get(node.id)!);
+    nodes[node.id] = {
+      ...nodeBox,
+      lines: nodeLines.get(node.id)!,
+      ...(options.iconNodeIds?.has(node.id) && {
+        icon: {
+          x: round(nodeBox.x + (nodeBox.width - iconSize) / 2),
+          // A cylinder's curved rim takes the top 16 px; start below it.
+          y: round(nodeBox.y + PADDING_Y + (node.shape === 'cylinder' ? 10 : 0)),
+          width: iconSize,
+          height: iconSize,
+        },
+      }),
+    };
   }
 
   const groups: Record<string, GroupLayout> = {};
