@@ -24,6 +24,7 @@
     "@flowforge/core": "workspace:*",
     "@flowforge/layout": "workspace:*",
     "@flowforge/parser": "workspace:*",
+    "@flowforge/providers": "workspace:*",
     "@flowforge/renderer": "workspace:*",
     "@flowforge/transforms": "workspace:*",
     "@resvg/resvg-js": "^2.6.2"
