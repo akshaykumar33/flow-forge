@@ -8,6 +8,8 @@ All notable changes to FlowForge are recorded here. The format follows
 
 ### Added
 
+- Web editor: accept or ignore suggested services in the inspector, with undo and redo (buttons
+  and Ctrl/Cmd+Z). Decisions are kept by node id and survive source edits.
 - Web editor (`apps/web`, ADR-0008): live preview, problems list, outline, inspector, pan and
   zoom, themes, and SVG, Mermaid and JSON export. Static and client-only.
 
