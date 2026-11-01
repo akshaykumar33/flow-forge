@@ -1,0 +1,74 @@
+@import 'tailwindcss';
+
+/* Tokens from the approved mockup. Light values apply when the OS prefers light. */
+:root {
+  --ground: #0b0e13;
+  --panel: #11151c;
+  --border: #232a35;
+  --text: #e6eaf0;
+  --muted: #98a2b3;
+  --grid: #1c222c;
+  --accent: #38bdf8;
+  --accent-ink: #04121c;
+  --warn: #f5b84b;
+  --error: #f87171;
+  --ok: #34d399;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --ground: #f6f7f9;
+    --panel: #ffffff;
+    --border: #dde1e7;
+    --text: #141820;
+    --muted: #5b6472;
+    --grid: #e3e6eb;
+    --accent: #0369a1;
+    --accent-ink: #ffffff;
+    --warn: #a16207;
+    --error: #b91c1c;
+    --ok: #047857;
+    color-scheme: light;
+  }
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-panel: var(--panel);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-warn: var(--warn);
+  --color-error: var(--error);
+  --color-ok: var(--ok);
+  --font-sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  --font-mono: 'Cascadia Code', Consolas, 'SF Mono', Menlo, ui-monospace, monospace;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--ground);
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.canvas-grid {
+  background-color: var(--ground);
+  background-image: radial-gradient(var(--grid) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

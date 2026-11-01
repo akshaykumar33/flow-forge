@@ -4,6 +4,18 @@ All notable changes to FlowForge are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/). Before 1.0.0, minor versions may change public APIs.
 
+## [Unreleased]
+
+### Added
+
+- Web editor (`apps/web`, ADR-0008): live preview, problems list, outline, inspector, pan and
+  zoom, themes, and SVG, Mermaid and JSON export. Static and client-only.
+
+### Changed
+
+- `@flowforge/layout` accepts an `elk` instance, so browsers can run ELK in a real worker; the
+  built-in engine now loads lazily.
+
 ## [0.2.0] - 2026-10-31
 
 Second preview: more themes, PNG export, and cloud service awareness. Packages are not yet

@@ -1,4 +1,4 @@
-export { layoutModel, type LayoutOptions, type LayoutOutput } from './layout.js';
+export { layoutModel, type ELK, type LayoutOptions, type LayoutOutput } from './layout.js';
 export { checkReadability, overlaps, type ReadabilityLimits } from './readability.js';
 export { estimateTextWidth, lineHeight, wrapText } from './text.js';
 export type {
