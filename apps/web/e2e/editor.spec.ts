@@ -101,3 +101,68 @@ test('hostile labels stay inert on the canvas', async ({ page }) => {
   await expect(canvas(page).locator('script, img, foreignObject')).toHaveCount(0);
   expect(alerted).toBe(false);
 });
+
+test.describe('suggestions and undo', () => {
+  const inspector = (page: Page) => page.getByRole('complementary', { name: 'Inspector' });
+
+  test.beforeEach(async ({ page }) => {
+    await page.getByLabel('Example').selectOption('aws-serverless');
+    await expect(canvas(page).locator('[data-node-id="gw"]')).toBeVisible();
+    await canvas(page).locator('[data-node-id="gw"]').click();
+  });
+
+  test('an uncertain service is only a suggestion until applied', async ({ page }) => {
+    const suggestions = inspector(page).getByRole('region', { name: 'Suggestions' });
+    await expect(suggestions).toContainText('Amazon API Gateway');
+    await expect(suggestions).toContainText('80%');
+    await expect(inspector(page)).not.toContainText('aws.api-gateway');
+
+    await suggestions.getByRole('button', { name: 'Apply Amazon API Gateway' }).click();
+    await expect(inspector(page)).toContainText('aws.api-gateway');
+    await expect(inspector(page)).toContainText('your choice');
+    await expect(inspector(page).getByRole('region', { name: 'Suggestions' })).toHaveCount(0);
+  });
+
+  test('undo and redo move through decisions, by button and keyboard', async ({ page }) => {
+    await inspector(page).getByRole('button', { name: 'Apply Amazon API Gateway' }).click();
+    await expect(inspector(page)).toContainText('your choice');
+
+    await page.getByRole('button', { name: 'Undo' }).click();
+    await expect(inspector(page)).not.toContainText('your choice');
+    await expect(inspector(page)).toContainText('Amazon API Gateway');
+
+    await page.getByRole('button', { name: 'Redo' }).click();
+    await expect(inspector(page)).toContainText('your choice');
+
+    await canvas(page).click({ position: { x: 5, y: 5 } });
+    await page.keyboard.press('ControlOrMeta+z');
+    await canvas(page).locator('[data-node-id="gw"]').click();
+    await expect(inspector(page)).not.toContainText('your choice');
+    await expect(page.getByRole('button', { name: 'Redo' })).toBeEnabled();
+  });
+
+  test('ignored suggestions stay gone after editing the source', async ({ page }) => {
+    await inspector(page).getByRole('button', { name: 'Ignore Amazon API Gateway' }).click();
+    await expect(inspector(page).getByRole('region', { name: 'Suggestions' })).toHaveCount(0);
+
+    // An unrelated edit re-parses everything; the dismissed suggestion must not return.
+    const editor = page.getByRole('textbox', { name: 'Mermaid source' });
+    await editor.click();
+    await page.keyboard.press('ControlOrMeta+End');
+    await page.keyboard.insertText('\n  extra[Extra]');
+    await expect(canvas(page).locator('[data-node-id="extra"]')).toBeVisible();
+    await canvas(page).locator('[data-node-id="gw"]').click();
+    await expect(inspector(page).getByRole('region', { name: 'Suggestions' })).toHaveCount(0);
+  });
+
+  test('an accepted service survives source edits', async ({ page }) => {
+    await inspector(page).getByRole('button', { name: 'Apply Amazon API Gateway' }).click();
+    const editor = page.getByRole('textbox', { name: 'Mermaid source' });
+    await editor.click();
+    await page.keyboard.press('ControlOrMeta+End');
+    await page.keyboard.insertText('\n  extra[Extra]');
+    await expect(canvas(page).locator('[data-node-id="extra"]')).toBeVisible();
+    await canvas(page).locator('[data-node-id="gw"]').click();
+    await expect(inspector(page)).toContainText('your choice');
+  });
+});

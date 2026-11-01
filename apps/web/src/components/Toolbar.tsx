@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, Workflow } from 'lucide-react';
+import { Download, Redo2, Undo2, Workflow } from 'lucide-react';
 import { serializeModel } from '@flowforge/core';
 import { toMermaid } from '@flowforge/parser';
 import { themes, type ThemeId } from '@flowforge/renderer';
@@ -14,7 +14,7 @@ const buttonClass =
   'inline-flex h-8 items-center gap-1.5 rounded-md border border-line px-2.5 text-sm hover:border-muted disabled:opacity-50';
 
 export function Toolbar() {
-  const { theme, setTheme, setSource, model, svg, busy } = useEditor();
+  const { theme, setTheme, setSource, model, svg, busy, undo, redo, past, future } = useEditor();
 
   const exportMermaid = () => {
     if (!model) return;
@@ -55,6 +55,31 @@ export function Toolbar() {
       </span>
 
       <div className="flex-1" />
+
+      <div className="flex gap-1" role="group" aria-label="History">
+        <button
+          type="button"
+          className={buttonClass}
+          disabled={past.length === 0}
+          onClick={undo}
+          aria-label="Undo"
+          aria-keyshortcuts="Control+Z Meta+Z"
+          title="Undo (Ctrl+Z)"
+        >
+          <Undo2 aria-hidden className="size-3.5" />
+        </button>
+        <button
+          type="button"
+          className={buttonClass}
+          disabled={future.length === 0}
+          onClick={redo}
+          aria-label="Redo"
+          aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
+          title="Redo (Ctrl+Shift+Z)"
+        >
+          <Redo2 aria-hidden className="size-3.5" />
+        </button>
+      </div>
 
       <label className="flex items-center gap-1.5 text-sm text-muted">
         Theme

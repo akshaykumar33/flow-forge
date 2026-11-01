@@ -3,13 +3,16 @@ import { checkReadability, layoutModel, type ELK } from '@flowforge/layout';
 import { parse } from '@flowforge/parser';
 import { recognizeServicesTransform } from '@flowforge/providers';
 import { renderSvg, type ThemeId } from '@flowforge/renderer';
-import { runTransform } from '@flowforge/transforms';
+import { applySuggestion, runTransform, type Suggestion } from '@flowforge/transforms';
+import { suggestionKey, type Decisions } from '../store';
 
 export interface PipelineResult {
   model?: GraphModel;
   svg?: string;
   size?: { width: number; height: number };
   diagnostics: Diagnostic[];
+  /** Open suggestions: not yet accepted for that node and not ignored. */
+  suggestions?: Suggestion[];
 }
 
 /**
@@ -37,7 +40,11 @@ export class Pipeline {
   }
 
   /** Resolves with `undefined` when a newer run has started meanwhile. */
-  async run(source: string, theme: ThemeId): Promise<PipelineResult | undefined> {
+  async run(
+    source: string,
+    theme: ThemeId,
+    decisions: Decisions = { accepted: {}, ignored: [] },
+  ): Promise<PipelineResult | undefined> {
     const seq = ++this.seq;
     try {
       const parsed = await parse(source);
@@ -45,8 +52,20 @@ export class Pipeline {
       if (!parsed.ok) return { diagnostics: parsed.diagnostics };
       // Certain service recognitions feed the inspector; uncertain ones are suggestions.
       const recognised = runTransform(recognizeServicesTransform, parsed.model, {});
-      const model = recognised.ok ? recognised.model : parsed.model;
-      return await this.layout(seq, model, theme, parsed.diagnostics);
+      let model = recognised.ok ? recognised.model : parsed.model;
+      // Re-apply what the user accepted; decisions for nodes no longer in the source are kept but
+      // unused, so deleting and restoring a node brings its decision back.
+      const present = new Set(model.nodes.map((n) => n.id));
+      for (const [elementId, inference] of Object.entries(decisions.accepted)) {
+        if (!present.has(elementId)) continue;
+        model = applySuggestion(model, { transformId: 'user', elementId, inference });
+      }
+      const ignored = new Set(decisions.ignored);
+      const suggestions = (recognised.ok ? recognised.suggestions : []).filter(
+        (s) => !(s.elementId in decisions.accepted) && !ignored.has(suggestionKey(s)),
+      );
+      const result = await this.layout(seq, model, theme, parsed.diagnostics);
+      return result && { ...result, suggestions };
     } catch (error) {
       if (seq !== this.seq) return undefined;
       return { diagnostics: [failure('pipeline-failed', error)] };

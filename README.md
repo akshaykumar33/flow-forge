@@ -159,5 +159,6 @@ pnpm --filter @flowforge/web e2e        # Playwright tests against the static bu
 
 Works today: live preview while typing, problems with line numbers (click to jump), outline and
 canvas selection, an inspector showing recognised services, pan and zoom, six themes, and export
-to SVG, Mermaid and JSON. Not yet: undo history, accepting suggestions, icon packs, saved
+to SVG, Mermaid and JSON, accepting or ignoring suggested services, and undo/redo of those
+decisions. Not yet: icon packs, saved
 projects, PNG export and animation.
