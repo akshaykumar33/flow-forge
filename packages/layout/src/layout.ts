@@ -1,5 +1,6 @@
-import elkModule from 'elkjs/lib/elk.bundled.js';
 import type { ELK, ElkEdgeSection, ElkExtendedEdge, ElkLabel, ElkNode } from 'elkjs/lib/elk-api.js';
+
+export type { ELK } from 'elkjs/lib/elk-api.js';
 import type { Diagnostic, Direction, GraphModel, GraphNode, NodeShape } from '@flowforge/core';
 import { estimateTextWidth, lineHeight, wrapText } from './text.js';
 import type {
@@ -27,6 +28,11 @@ export interface LayoutOptions {
   iconNodeIds?: ReadonlySet<string>;
   /** Icon edge length in px. Default 32. */
   iconSize?: number;
+  /**
+   * ELK instance to use. Browsers pass one backed by a real Web Worker so layout never blocks the
+   * page; Node and tests use the built-in in-process engine.
+   */
+  elk?: ELK;
 }
 
 export interface LayoutOutput {
@@ -47,13 +53,39 @@ const MIN_NODE = { width: 96, height: 44 };
 const GROUP_PADDING = 20;
 const ICON_GAP = 6;
 
-// elkjs is CommonJS: Node's ESM loader returns `module.exports` (the class itself), some bundlers
-// return `{ default }`, and its typings describe neither under NodeNext. Accept both shapes and
-// type the result with elkjs's own `ELK` interface.
-type ElkConstructor = new () => ELK;
-const loaded = elkModule as unknown as ElkConstructor & { default?: ElkConstructor };
-const Elk: ElkConstructor = loaded.default ?? loaded;
-let sharedElk: ELK | undefined;
+let defaultElk: Promise<ELK> | undefined;
+
+/**
+ * ELK's plain API with its in-process engine, for Node and tests. Loaded lazily, so browsers that
+ * pass their own `elk` (backed by a real worker, ADR-0008) never evaluate the engine on the main
+ * thread. elk.bundled.js is not used: it tries to start a real Worker itself, and
+ * elk-worker.min.js turns into a worker script when evaluated inside any worker.
+ * Both files are CommonJS; Node and bundlers hand back different shapes, so all are accepted.
+ */
+function loadDefaultElk(): Promise<ELK> {
+  defaultElk ??= (async () => {
+    type Ctor<T> = new (...args: never[]) => T;
+    const pick = <T>(mod: unknown, key?: string): Ctor<T> => {
+      const m = mod as Record<string, unknown> & { default?: unknown };
+      for (const candidate of [
+        m,
+        key && m[key],
+        m.default,
+        key && (m.default as Record<string, unknown> | undefined)?.[key],
+      ]) {
+        if (typeof candidate === 'function') return candidate as Ctor<T>;
+      }
+      throw new Error(
+        'elkjs module shape not recognised; the elkjs package layout may have changed.',
+      );
+    };
+    const Api = pick<ELK>(await import('elkjs/lib/elk-api.js'));
+    const Engine = pick<unknown>(await import('elkjs/lib/elk-worker.min.js'), 'Worker');
+    const ElkApi = Api as unknown as new (options: { workerFactory: () => unknown }) => ELK;
+    return new ElkApi({ workerFactory: () => new (Engine as unknown as new () => unknown)() });
+  })();
+  return defaultElk;
+}
 
 /**
  * Computes positions, sizes, edge routes and label boxes for a model. Pure apart from awaiting
@@ -152,8 +184,8 @@ export async function layoutModel(
     return { id: edge.id, sources: [edge.source], targets: [edge.target], labels };
   });
 
-  sharedElk ??= new Elk();
-  const result = await sharedElk.layout(root);
+  const elk = options.elk ?? (await loadDefaultElk());
+  const result = await elk.layout(root);
 
   const placed = new Map<string, ElkNode>();
   const collect = (node: ElkNode) => {
