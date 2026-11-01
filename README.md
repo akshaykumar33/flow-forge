@@ -3,11 +3,11 @@
 FlowForge turns Mermaid diagrams into a typed, validated graph model, the foundation for polished,
 provider-aware architecture diagrams.
 
-> **Status: early development (Phase 4 of 8 in progress).** FlowForge parses, validates,
+> **Status: early development (Phase 5 of 8 in progress).** FlowForge parses, validates,
 > transforms, recognises cloud services in, compares, re-exports, lays out and renders Mermaid
-> **flowcharts** to SVG or PNG, from code or the `flowforge` CLI. The web editor and animation do
-> not exist yet. See
-> [PROJECT_STATUS.md](PROJECT_STATUS.md) for exactly what works.
+> **flowcharts** to SVG or PNG, from code, the `flowforge` CLI, or an early browser editor.
+> Animation and simulation do not exist yet. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for
+> exactly what works.
 
 ## What works today
 
@@ -144,3 +144,20 @@ Download the official packs yourself, accepting each provider's terms, and point
 
 Nodes whose label clearly names a service (see `transform --recognize`) get the matching icon
 above their label. Icons are embedded as images, so scripts inside an icon file cannot run.
+
+## Web editor
+
+A browser editor lives in `apps/web`: Mermaid source on the bottom, the live diagram in the
+middle, an outline on the left and an inspector on the right. It is a static site with no server,
+so diagrams never leave your browser.
+
+```sh
+pnpm build                              # builds the packages the editor uses
+pnpm --filter @flowforge/web dev        # http://localhost:3000
+pnpm --filter @flowforge/web e2e        # Playwright tests against the static build
+```
+
+Works today: live preview while typing, problems with line numbers (click to jump), outline and
+canvas selection, an inspector showing recognised services, pan and zoom, six themes, and export
+to SVG, Mermaid and JSON. Not yet: undo history, accepting suggestions, icon packs, saved
+projects, PNG export and animation.

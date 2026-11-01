@@ -1,0 +1,43 @@
+{
+  "name": "@flowforge/web",
+  "version": "0.2.0",
+  "private": true,
+  "description": "The FlowForge editor: a static, client-only web app (ADR-0008).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "e2e": "playwright test",
+    "prebuild": "node scripts/copy-elk-worker.mjs",
+    "predev": "node scripts/copy-elk-worker.mjs"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/language": "^6.13.1",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.15",
+    "@flowforge/core": "workspace:*",
+    "@flowforge/layout": "workspace:*",
+    "@flowforge/parser": "workspace:*",
+    "@flowforge/providers": "workspace:*",
+    "@flowforge/renderer": "workspace:*",
+    "@flowforge/transforms": "workspace:*",
+    "dompurify": "^3.4.17",
+    "elkjs": "0.12.0",
+    "lucide-react": "^1.66.0",
+    "next": "^16.4.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.3"
+  }
+}

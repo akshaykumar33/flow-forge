@@ -3,3 +3,9 @@ dist
 coverage
 pnpm-lock.yaml
 prompts
+apps/web/.next
+apps/web/out
+apps/web/public/vendor
+apps/web/next-env.d.ts
+apps/web/test-results
+apps/web/playwright-report

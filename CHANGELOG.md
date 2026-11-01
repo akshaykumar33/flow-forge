@@ -8,6 +8,8 @@ All notable changes to FlowForge are recorded here. The format follows
 
 ### Added
 
+- Web editor (`apps/web`, ADR-0008): live preview, problems list, outline, inspector, pan and
+  zoom, themes, and SVG, Mermaid and JSON export. Static and client-only.
 - Three more themes: cloud-architecture, blueprint and minimal-technical.
 - PNG export: `flowforge render --format png -o file.png`, with `--scale` (default 2x).
 - `@flowforge/providers`: 60 Azure, AWS and Google Cloud services and generic categories.
@@ -19,6 +21,8 @@ All notable changes to FlowForge are recorded here. The format follows
 
 ### Changed
 
+- `@flowforge/layout` accepts an `elk` instance, so browsers can run ELK in a real worker; the
+  built-in engine now loads lazily.
 - `flowforge transform --json` prints one JSON report with changes, suggestions and diagnostics,
   also when the input is invalid.
 
