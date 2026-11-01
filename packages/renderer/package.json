@@ -1,6 +1,6 @@
 {
   "name": "@flowforge/renderer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Themed, sanitised SVG rendering of a laid-out FlowForge diagram.",
   "license": "MIT",
   "type": "module",

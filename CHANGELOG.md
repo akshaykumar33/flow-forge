@@ -4,7 +4,10 @@ All notable changes to FlowForge are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/). Before 1.0.0, minor versions may change public APIs.
 
-## [Unreleased]
+## [0.2.0] - 2026-10-31
+
+Second preview: more themes, PNG export, and cloud service awareness. Packages are not yet
+published to npm; build from source.
 
 ### Added
 
@@ -25,6 +28,14 @@ All notable changes to FlowForge are recorded here. The format follows
   built-in engine now loads lazily.
 - `flowforge transform --json` prints one JSON report with changes, suggestions and diagnostics,
   also when the input is invalid.
+
+### Known limitations
+
+- Icon-pack matching is tested with files that follow each provider's naming, not yet with the
+  real downloaded packs. Run `render -v` to see how many services a pack matched.
+- Edges can bunch together where many leave one node.
+- Flowcharts only; no web editor or animation yet.
+- PNG export uses `@resvg/resvg-js` (MPL-2.0), a CLI-only dependency.
 
 ## [0.1.0] - 2026-10-25
 
@@ -55,4 +66,5 @@ First preview. Packages are not yet published to npm; build from source.
 - PNG export and the remaining themes from the roadmap are not available yet.
 - Layout uses `elkjs`, licensed EPL-2.0 or GPL-3.0-or-later (see ADR-0006).
 
+[0.2.0]: https://github.com/akshaykumar33/flow-forge/releases/tag/v0.2.0
 [0.1.0]: https://github.com/akshaykumar33/flow-forge/releases/tag/v0.1.0
