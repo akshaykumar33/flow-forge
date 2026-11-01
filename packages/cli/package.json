@@ -1,6 +1,6 @@
 {
   "name": "@flowforge/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The flowforge command: validate, inspect, transform, diff and render Mermaid flowcharts.",
   "license": "MIT",
   "type": "module",
